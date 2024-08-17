@@ -171,7 +171,7 @@ extension Router: TargetType {
     var path: String {
         switch self {
         case .join:
-            return "/users/login"
+            return "/users/join"
         case .emailCheck:
             return "validation/email"
         case .login:

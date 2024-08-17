@@ -9,7 +9,7 @@ import UIKit
 
 extension UIViewController {
     
-    func setRootViewController(_ viewController: UIViewController) {
+    func setController(_ viewController: UIViewController) {
  
         if let scene = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
         let window = scene.window {

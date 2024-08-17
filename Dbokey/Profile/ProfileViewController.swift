@@ -77,17 +77,8 @@ final class ProfileViewController: UIViewController {
         editProfile()
     }
     @objc private func logoutButtonTapped() {
-        //임시로 로그인 기능 달아놓기
-        //로그인해서 엑세스/리프레시 토큰 새롭게 항상 저장
-        //게시글 업로드
-        
-        NetworkManager.createLogin(email: "112233", password: "123") { (success) in
-            if success {
-                let vc = UINavigationController(rootViewController: LoginViewController())
-                //self.setRootViewController(vc)
-            }
-        }
-
+        let vc = UINavigationController(rootViewController: LoginViewController())
+        self.setController(vc)
     }
 }
 //1.accessToken 갱신 로직 구조화(어떻게 하나로 만들 수 있을까?)
