@@ -7,14 +7,36 @@
 
 import Foundation
 import Alamofire
+import RxSwift
 
 struct NetworkManager {
     private init() {}
+    static func emailCheck(email: String/*, completion: @escaping(Bool)->()*/) -> Observable<emailCheckModel> {
+        let query = emailCheckQuery(email: email)
+        let request = try! Router.emailCheck(query: query).asURLRequest()
+        return Observable.create { observer -> Disposable in
+            AF.request(request)
+                .validate(statusCode: 200...299)
+                .responseDecodable(of: emailCheckModel.self) { response in
+                    switch response.result {
+                    case .success(let success):
+                        print("OK",success)
+                        observer.onNext(success)
+                        observer.onCompleted()//구독 중첩 해결
+                        //completion(true)
+                    case .failure(let error):
+                        observer.onError(error)
+                        //completion(false)
+                    }
+                }
+            return Disposables.create()
+        }.debug("iTunes API 통신")
+    }
     static func createJoin(email: String, passwrod: String, nick: String, phoneNum: String, birthDay: String, completion: @escaping(Bool)->() ) {
         do {
             let query = JoinQuery(email: email, password: passwrod, nick: nick, phoneNum: phoneNum, birthDay: birthDay)
             let request = try Router.join(query: query).asURLRequest()
-            AF.request(request).responseDecodable(of: JoinModel.self) { response in
+            AF.request(request).responseDecodable(of: SignModel.self) { response in
                 switch response.result {
                 case .success(let success):
                     print("OK",success)
@@ -29,17 +51,16 @@ struct NetworkManager {
             completion(false)
         }
     }
-
     static func createLogin(email: String, password: String, completion: @escaping(Bool)->() ) {
         do {
             let query = LoginQuery(email: email, password: password)
             let request = try Router.login(query: query).asURLRequest()
-            AF.request(request).responseDecodable(of: LoginModel.self) { response in
+            AF.request(request).responseDecodable(of: SignModel.self) { response in
                 switch response.result {
                 case.success(let success):
                     print("OK",success)
-                    UserDefaultsManager.shared.token = success.access
-                    UserDefaultsManager.shared.refreshToken = success.refresh
+                    UserDefaultsManager.shared.token = success.access!
+                    UserDefaultsManager.shared.refreshToken = success.refresh!
                     //성공적으로 로그인이 되었을 때에만 화면 전환!
                     completion(true)
                 case .failure(let failure):
@@ -75,7 +96,7 @@ struct NetworkManager {
                 }
             }
         } catch {
-            print("error catch")
+            print("에러",error)
         }
     }
 }

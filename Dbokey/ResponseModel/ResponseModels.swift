@@ -1,5 +1,5 @@
 //
-//  LoginModel.swift
+//  ResponseModels.swift
 //  Dbokey
 //
 //  Created by 소정섭 on 8/16/24.
@@ -7,13 +7,16 @@
 
 import Foundation
 
-struct LoginModel: Decodable {
+struct emailCheckModel: Decodable {
+    let message: String
+}
+struct SignModel: Decodable {
     let id: String
     let email: String
     let nick: String
     let profile: String?
-    let access: String
-    let refresh: String
+    let access: String?
+    let refresh: String?
     
     enum CodingKeys: String, CodingKey {
         case id = "user_id"
@@ -22,4 +25,10 @@ struct LoginModel: Decodable {
         case access = "accessToken"
         case refresh = "refreshToken"
     }
+}
+struct RefreshModel: Decodable {
+    let accessToken: String
+}
+struct FilesModel: Decodable {
+    let files: [String]
 }

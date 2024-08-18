@@ -43,11 +43,8 @@ final class LoginViewController: UIViewController {
                 print(email,"이메일")
                 print(pw,"비번")
                 NetworkManager.createLogin(email: email, password: pw) { success in
-                    if success {
-                        self.showAlert(message: self.messages[0])//확인누르면 vc로 이동
-                    } else {
-                        self.showAlert(message: self.messages[1])
-                    }
+                    success ? self.showAlert(message: self.messages[0]) : self.showAlert(message: self.messages[1])
+                    
                 }
             })
             .disposed(by: disposeBag)

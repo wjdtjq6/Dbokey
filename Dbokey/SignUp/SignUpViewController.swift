@@ -23,6 +23,7 @@ class SignUpViewController: UIViewController {
     let nextButton = PointButton(title: "다음")
     let disposeBag = DisposeBag()
     let viewModel = SignUpViewModel()
+    let messages = ["사용가능한 이메일입니다.","사용할 수 없는 이메일입니다."]
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor.white
@@ -45,7 +46,9 @@ class SignUpViewController: UIViewController {
         //3.
         output.validationTap//validationButton.rx.tap//input,output
             .bind { _ in
-                self.showAlert()
+                NetworkManager.emailCheck(email: self.emailTextField.text!) { success in
+                    success ? self.showAlert(message: self.messages[0]) : self.showAlert(message: self.messages[1])
+                }
             }
             .disposed(by: disposeBag)
         //4.
@@ -63,12 +66,14 @@ class SignUpViewController: UIViewController {
             }
             .disposed(by: disposeBag)
     }
-    func showAlert() {
-        let alert = UIAlertController(title: "사용가능한 이메일입니다.", message: nil, preferredStyle: .alert)
+    func showAlert(message: String) {
+        let alert = UIAlertController(title: message, message: nil, preferredStyle: .alert)
         let check = UIAlertAction(title: "확인", style: .default) { _ in
-            self.nextButton.isEnabled = true
-            self.nextButton.backgroundColor = .black
-            self.nextButton.setTitleColor(.white, for: .normal)
+            if alert.title == self.messages[0] {
+                self.nextButton.isEnabled = true
+                self.nextButton.backgroundColor = .black
+                self.nextButton.setTitleColor(.white, for: .normal)
+            }
         }
         alert.addAction(check)
         present(alert, animated: true)

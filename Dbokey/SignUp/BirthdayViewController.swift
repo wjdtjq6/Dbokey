@@ -124,7 +124,6 @@ class BirthdayViewController: UIViewController {
                     UserDefaultsManager.shared.birthDay = pickedDate
                     NetworkManager.createJoin(email: UserDefaultsManager.shared.email, passwrod: UserDefaultsManager.shared.password, nick: UserDefaultsManager.shared.nick, phoneNum: UserDefaultsManager.shared.phoneNum, birthDay: UserDefaultsManager.shared.birthDay) { success in
                         if success {
-                            let vc = LoginViewController()
                             self.navigationController?.popToRootViewController(animated: true)
                         }
                     }

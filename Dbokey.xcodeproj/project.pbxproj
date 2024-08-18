@@ -20,17 +20,13 @@
 		BF7222AE2C6F226B004BF726 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222AD2C6F226B004BF726 /* Router.swift */; };
 		BF7222B02C6F2274004BF726 /* UserDefaultsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222AF2C6F2274004BF726 /* UserDefaultsManager.swift */; };
 		BF7222B22C6F227B004BF726 /* TargetType.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222B12C6F227B004BF726 /* TargetType.swift */; };
-		BF7222B52C6F22F4004BF726 /* LoginModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222B42C6F22F4004BF726 /* LoginModel.swift */; };
-		BF7222B72C6F22FB004BF726 /* ProfileModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222B62C6F22FB004BF726 /* ProfileModel.swift */; };
-		BF7222B92C6F230F004BF726 /* RefreshModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222B82C6F230F004BF726 /* RefreshModel.swift */; };
-		BF7222BB2C6F231E004BF726 /* FilesModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222BA2C6F231E004BF726 /* FilesModel.swift */; };
 		BF7222BE2C6F2365004BF726 /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222BD2C6F2365004BF726 /* LoginViewModel.swift */; };
 		BF7222C02C6F2371004BF726 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222BF2C6F2371004BF726 /* LoginViewController.swift */; };
 		BF7222C32C6F23D0004BF726 /* SignUpViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222C22C6F23D0004BF726 /* SignUpViewModel.swift */; };
 		BF7222C52C6F23D7004BF726 /* SignUpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222C42C6F23D7004BF726 /* SignUpViewController.swift */; };
 		BF7222C82C6F261E004BF726 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = BF7222C72C6F261E004BF726 /* Alamofire */; };
 		BF7222CB2C6F263E004BF726 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = BF7222CA2C6F263E004BF726 /* SnapKit */; };
-		BF7222CD2C6F8304004BF726 /* JoinModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222CC2C6F8304004BF726 /* JoinModel.swift */; };
+		BF7222CD2C6F8304004BF726 /* ResponseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222CC2C6F8304004BF726 /* ResponseModels.swift */; };
 		BF7222D02C6F8D6D004BF726 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222CF2C6F8D6D004BF726 /* ProfileView.swift */; };
 		BF7222D22C6F8D78004BF726 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222D12C6F8D78004BF726 /* ProfileViewController.swift */; };
 		BF7222D52C6F8E50004BF726 /* UIViewController+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222D42C6F8E50004BF726 /* UIViewController+Extension.swift */; };
@@ -84,15 +80,11 @@
 		BF7222AD2C6F226B004BF726 /* Router.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Router.swift; sourceTree = "<group>"; };
 		BF7222AF2C6F2274004BF726 /* UserDefaultsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsManager.swift; sourceTree = "<group>"; };
 		BF7222B12C6F227B004BF726 /* TargetType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TargetType.swift; sourceTree = "<group>"; };
-		BF7222B42C6F22F4004BF726 /* LoginModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginModel.swift; sourceTree = "<group>"; };
-		BF7222B62C6F22FB004BF726 /* ProfileModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileModel.swift; sourceTree = "<group>"; };
-		BF7222B82C6F230F004BF726 /* RefreshModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshModel.swift; sourceTree = "<group>"; };
-		BF7222BA2C6F231E004BF726 /* FilesModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesModel.swift; sourceTree = "<group>"; };
 		BF7222BD2C6F2365004BF726 /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		BF7222BF2C6F2371004BF726 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		BF7222C22C6F23D0004BF726 /* SignUpViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpViewModel.swift; sourceTree = "<group>"; };
 		BF7222C42C6F23D7004BF726 /* SignUpViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpViewController.swift; sourceTree = "<group>"; };
-		BF7222CC2C6F8304004BF726 /* JoinModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinModel.swift; sourceTree = "<group>"; };
+		BF7222CC2C6F8304004BF726 /* ResponseModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseModels.swift; sourceTree = "<group>"; };
 		BF7222CF2C6F8D6D004BF726 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		BF7222D12C6F8D78004BF726 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		BF7222D42C6F8E50004BF726 /* UIViewController+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Extension.swift"; sourceTree = "<group>"; };
@@ -202,11 +194,7 @@
 		BF7222B32C6F22E9004BF726 /* ResponseModel */ = {
 			isa = PBXGroup;
 			children = (
-				BF7222CC2C6F8304004BF726 /* JoinModel.swift */,
-				BF7222B42C6F22F4004BF726 /* LoginModel.swift */,
-				BF7222B62C6F22FB004BF726 /* ProfileModel.swift */,
-				BF7222B82C6F230F004BF726 /* RefreshModel.swift */,
-				BF7222BA2C6F231E004BF726 /* FilesModel.swift */,
+				BF7222CC2C6F8304004BF726 /* ResponseModels.swift */,
 			);
 			path = ResponseModel;
 			sourceTree = "<group>";
@@ -415,25 +403,21 @@
 				BF7222F12C70C516004BF726 /* BirthdayViewModel.swift in Sources */,
 				BF7222A72C6F2248004BF726 /* Queries.swift in Sources */,
 				BF7222BE2C6F2365004BF726 /* LoginViewModel.swift in Sources */,
-				BF7222B72C6F22FB004BF726 /* ProfileModel.swift in Sources */,
-				BF7222B52C6F22F4004BF726 /* LoginModel.swift in Sources */,
 				BF7222C52C6F23D7004BF726 /* SignUpViewController.swift in Sources */,
 				BF7222E52C70C219004BF726 /* PhoneViewController.swift in Sources */,
 				BF19C8EE2C6C7CC800A59041 /* ViewController.swift in Sources */,
 				BF7222EF2C70C4EE004BF726 /* BirthdayViewController.swift in Sources */,
 				BF19C8EA2C6C7CC800A59041 /* AppDelegate.swift in Sources */,
-				BF7222CD2C6F8304004BF726 /* JoinModel.swift in Sources */,
+				BF7222CD2C6F8304004BF726 /* ResponseModels.swift in Sources */,
 				BF7222AC2C6F2265004BF726 /* NetworkManager.swift in Sources */,
 				BF7222B02C6F2274004BF726 /* UserDefaultsManager.swift in Sources */,
 				BF7222D52C6F8E50004BF726 /* UIViewController+Extension.swift in Sources */,
 				BF7222D02C6F8D6D004BF726 /* ProfileView.swift in Sources */,
-				BF7222B92C6F230F004BF726 /* RefreshModel.swift in Sources */,
 				BF7222E12C70B950004BF726 /* PasswordViewController.swift in Sources */,
 				BF7222DF2C708DEC004BF726 /* SignTextField.swift in Sources */,
 				BF19C9212C6C808400A59041 /* APIKey.swift in Sources */,
 				BF7222C32C6F23D0004BF726 /* SignUpViewModel.swift in Sources */,
 				BF7222C02C6F2371004BF726 /* LoginViewController.swift in Sources */,
-				BF7222BB2C6F231E004BF726 /* FilesModel.swift in Sources */,
 				BF7222D22C6F8D78004BF726 /* ProfileViewController.swift in Sources */,
 				BF7222AA2C6F225B004BF726 /* Header.swift in Sources */,
 				BF19C8EC2C6C7CC800A59041 /* SceneDelegate.swift in Sources */,
