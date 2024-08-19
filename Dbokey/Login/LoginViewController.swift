@@ -53,7 +53,7 @@ final class LoginViewController: UIViewController {
         let alert = UIAlertController(title: message, message: nil, preferredStyle: .alert)
         let check = UIAlertAction(title: "확인", style: .default) { _ in
             if alert.title == self.messages[0] {
-                let vc = ProfileViewController()
+                let vc = MainViewController()
                 self.setController(vc)
             }
         }

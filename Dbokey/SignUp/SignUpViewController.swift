@@ -23,7 +23,6 @@ class SignUpViewController: UIViewController {
     let nextButton = PointButton(title: "다음")
     let disposeBag = DisposeBag()
     let viewModel = SignUpViewModel()
-    let messages = ["사용가능한 이메일입니다.","사용할 수 없는 이메일입니다."]
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor.white
@@ -34,7 +33,7 @@ class SignUpViewController: UIViewController {
     func bind() {
         let input = SignUpViewModel.Input.init(text: emailTextField.rx.text, validationTap: validationButton.rx.tap, nextTap: nextButton.rx.tap)
         let output = viewModel.transform(input: input)
-        //2.
+
         output.validation//validation
             .bind(with: self) { owner, value in
                 owner.validationButton.isEnabled = value
@@ -43,22 +42,20 @@ class SignUpViewController: UIViewController {
                 owner.validationButton.setTitleColor(.white, for: .normal)
             }
             .disposed(by: disposeBag)
-        //3.
-        output.validationTap//validationButton.rx.tap//input,output
-            .bind { _ in
-                NetworkManager.emailCheck(email: self.emailTextField.text!) { success in
-                    success ? self.showAlert(message: self.messages[0]) : self.showAlert(message: self.messages[1])
-                }
+        output.emailCheckResult
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, message in
+                owner.showAlert(message: message)
             }
             .disposed(by: disposeBag)
-        //4.
+
         output.nextTap//nextButton.rx.tap//input,output
             .bind(with: self) { owner, _ in
                 UserDefaultsManager.shared.email = owner.emailTextField.text!
                 owner.navigationController?.pushViewController(PasswordViewController(), animated: true)
             }
             .disposed(by: disposeBag)
-        //5.
+
         output.validation//validation//output
             .bind(with: self) { owner, _ in
                 owner.nextButton.isEnabled = false
@@ -69,7 +66,7 @@ class SignUpViewController: UIViewController {
     func showAlert(message: String) {
         let alert = UIAlertController(title: message, message: nil, preferredStyle: .alert)
         let check = UIAlertAction(title: "확인", style: .default) { _ in
-            if alert.title == self.messages[0] {
+            if message == "사용 가능한 이메일입니다." {
                 self.nextButton.isEnabled = true
                 self.nextButton.backgroundColor = .black
                 self.nextButton.setTitleColor(.white, for: .normal)

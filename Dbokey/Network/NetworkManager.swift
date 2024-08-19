@@ -11,27 +11,41 @@ import RxSwift
 
 struct NetworkManager {
     private init() {}
-    static func emailCheck(email: String/*, completion: @escaping(Bool)->()*/) -> Observable<emailCheckModel> {
-        let query = emailCheckQuery(email: email)
-        let request = try! Router.emailCheck(query: query).asURLRequest()
-        return Observable.create { observer -> Disposable in
+    static func viewPost(next: String, limit: String, productID: String) -> Single<ViewPostModel> {
+        let query = ViewPostQuery(next: next, limit: "4", product_id: productID)
+        let request = try! Router.viewPost(query: query).asURLRequest()
+        return Single.create { observer in
             AF.request(request)
                 .validate(statusCode: 200...299)
-                .responseDecodable(of: emailCheckModel.self) { response in
+                .responseDecodable(of: ViewPostModel.self) { response in
                     switch response.result {
                     case .success(let success):
-                        print("OK",success)
-                        observer.onNext(success)
-                        observer.onCompleted()//구독 중첩 해결
-                        //completion(true)
+                        observer(.success(success))
                     case .failure(let error):
-                        observer.onError(error)
-                        //completion(false)
+                        observer(.failure(error))
+                    }
+                }
+            return Disposables.create()
+        }.debug("viewPost API 통신")
+    }
+    static func emailCheck(email: String) -> Single<EmailCheckModel> {
+        let query = emailCheckQuery(email: email)
+        let request = try! Router.emailCheck(query: query).asURLRequest()
+        return Single.create { observer in
+            AF.request(request)
+                .validate(statusCode: 200...299)
+                .responseDecodable(of: EmailCheckModel.self) { response in
+                    switch response.result {
+                    case .success(let success):
+                        observer(.success(success))
+                    case .failure(let error):
+                        observer(.failure(error))
                     }
                 }
             return Disposables.create()
         }.debug("iTunes API 통신")
     }
+    //TODO: RxSwift로 변경
     static func createJoin(email: String, passwrod: String, nick: String, phoneNum: String, birthDay: String, completion: @escaping(Bool)->() ) {
         do {
             let query = JoinQuery(email: email, password: passwrod, nick: nick, phoneNum: phoneNum, birthDay: birthDay)
@@ -51,6 +65,7 @@ struct NetworkManager {
             completion(false)
         }
     }
+    //TODO: RxSwift로 변경
     static func createLogin(email: String, password: String, completion: @escaping(Bool)->() ) {
         do {
             let query = LoginQuery(email: email, password: password)

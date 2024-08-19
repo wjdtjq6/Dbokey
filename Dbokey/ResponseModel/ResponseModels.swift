@@ -7,9 +7,40 @@
 
 import Foundation
 
-struct emailCheckModel: Decodable {
+struct ViewPostModel: Decodable {
+    let data: [PostData]
+}
+struct PostData: Decodable {
+    let post_id: String
+    let product_id: String
+    let title: String
+    let content: String
+    let content1: String
+    let content2: String
+    let content3: String
+    let content4: String
+    let createdAt: String
+    let creator: Creator
+    let files: [String]
+    let likes: [String?]
+    let likes2: [String?]
+    let comments: [Comments]
+}
+struct Creator: Decodable {
+    let user_id: String
+    let nick: String
+    let profileImage: String
+}
+struct Comments: Decodable {
+    let comment_id: String
+    let content: String
+    let creator: Creator
+}
+
+struct EmailCheckModel: Decodable {
     let message: String
 }
+
 struct SignModel: Decodable {
     let id: String
     let email: String
@@ -26,9 +57,11 @@ struct SignModel: Decodable {
         case refresh = "refreshToken"
     }
 }
+
 struct RefreshModel: Decodable {
     let accessToken: String
 }
+
 struct FilesModel: Decodable {
     let files: [String]
 }

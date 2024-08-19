@@ -10,6 +10,7 @@ import RxSwift
 import RxCocoa
 
 class SignUpViewModel {
+    let disposeBag = DisposeBag()
     struct Input {
         let text: ControlProperty<String?>
         let validationTap:  ControlEvent<Void>
@@ -19,28 +20,46 @@ class SignUpViewModel {
         let validation: Observable<Bool>
         let validationTap:  ControlEvent<Void>
         let nextTap: ControlEvent<Void>
+        let emailCheckResult: Observable<String>
     }
     func transform(input: Input) -> Output {
-        //1.
         let validationEmail = input.text.orEmpty
             .map { text in
                 text.contains("@") && text.contains(".com")
             }
-        input.validationTap
-            .withLatestFrom(input.text)
+        let emailCheckResult = input.validationTap
+            .withLatestFrom(input.text.orEmpty)
             .debug("체크1")
-            .flatMap { value in
-                NetworkManager.emailCheck(email: value!).catch { error in
+            .flatMapLatest({ email in
+                NetworkManager.emailCheck(email: email)
+                    .catch { error in
                     print(error.localizedDescription)
-                    return Single.just(emailCheckModel(message: "사용할 수 없는 메세지 입니다."))
-                }           
-            }
+                    return Single.just(EmailCheckModel(message: "사용할 수 없는 이메일입니다."))
+                }
+                .map { $0.message }
+            })
             .debug("체크2")
-            .subscribe(with: self) { owner, emailCheckModel in
-                dump(emailCheckModel.message)
-                print("이메일중복확인 결과")
-                
-            }
-        return Output(validation: validationEmail, validationTap: input.validationTap, nextTap: input.nextTap)
+          
+
+//            .flatMap { value in
+//                NetworkManager.emailCheck(email: value!).catch { error in
+//                    print(error.localizedDescription)
+//                    return Single.just(emailCheckModel(message: ""))
+//                }
+//            }
+//            .debug("체크2")
+//            .subscribe(with: self) { owner, emailCheckModel in
+//                dump(emailCheckModel.message)
+//                print("이메일중복확인 결과")
+//                emailCheckMeassage.onNext(emailCheckModel.message)
+//            } onError: { owner, error in
+//                print(error)
+//            } onCompleted: { owner in
+//                print("completed")
+//            } onDisposed: { owner in
+//                print("disposed")
+//            }
+//            .disposed(by: disposeBag)
+        return Output(validation: validationEmail, validationTap: input.validationTap, nextTap: input.nextTap, emailCheckResult: emailCheckResult)
     }
 }

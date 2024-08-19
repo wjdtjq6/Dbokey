@@ -22,7 +22,7 @@ struct emailCheckQuery: Encodable {
     let email: String
 }
 //포스트(게시글)
-struct uploadFilesQuery:Encodable {
+struct uploadFilesQuery: Encodable {
     let files: Data
 }
 struct writeEditPostQuery: Encodable {
@@ -48,6 +48,7 @@ struct writeEditCommentsQuery: Encodable {
 struct likePostQuery: Encodable {
     let like_status: Bool
 }
+
 //profile
 struct editProfileQuery: Encodable {
     let nick: String
