@@ -35,11 +35,6 @@ struct writeEditPostQuery: Encodable {
     let product_id: String
     let files: [String]
 }
-struct ViewPostQuery: Encodable {
-    let next: String
-    let limit: String
-    let product_id: String
-}
 //댓글(코멘트)
 struct writeEditCommentsQuery: Encodable {
     let content: String

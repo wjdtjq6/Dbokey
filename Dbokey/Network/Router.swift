@@ -18,11 +18,11 @@ enum Router {
     //포스트(게시글)
     case uploadFiles(query: uploadFilesQuery)
     case writePost(query: writeEditPostQuery)
-    case viewPost(query: ViewPostQuery)
+    case viewPost(next: String, limit: String, productID: String)
     case idPost(postID: String)
     case editPost(query: writeEditPostQuery, postID: String)
     case deletePost(postID: String)
-    case usersPost(query: ViewPostQuery, userID: String)
+    case usersPost(userID: String)
     //댓글(코멘트)
     case writeComments(query: writeEditCommentsQuery, postID: String)
     case editComments(query: writeEditCommentsQuery, postID: String, commentID: String)
@@ -38,7 +38,6 @@ enum Router {
     case editProfile(query: editProfileQuery)
     case viewAnotherProfile(userID: String)
 }
-
 extension Router: TargetType {
     var baseUrl: String {
         return APIKey.BaseURL + "v1"
@@ -56,7 +55,12 @@ extension Router: TargetType {
         }
     }
     var parameter: String? {
-        return nil
+        switch self {
+        case .viewPost(let next, let limit, let productID):
+            return "?next=\(next)&limit=\(limit)&product_id=\(productID)"
+        default:
+            return nil
+        }
     }
     var queryItems: [URLQueryItem]? {
         return nil
@@ -182,8 +186,10 @@ extension Router: TargetType {
             return "/v1/users/withdraw"
         case .uploadFiles:
             return "/posts/files"
-        case .writePost, .viewPost:
+        case .writePost ,.viewPost:
             return "/posts"
+//        case .viewPost(let next, let limit, let productID):
+//            return "/posts?next=\(next)&limit=\(limit)&product_id=\(productID)"
         case .idPost(let postID):
             return "/posts/\(postID)"
         case .editPost(let postID):
@@ -214,7 +220,7 @@ extension Router: TargetType {
     }
     var header: [String : String] {
         switch self {
-        case .join, .emailCheck, .login, .deletePost, .usersPost, .withdraw, .viewPost, .idPost, .likePost, .viewLikePost, .like2Post, .viewLike2Post, .uploadFiles, .viewProfile, .viewAnotherProfile:
+        case .join, .emailCheck, .login, .deletePost, .usersPost, .withdraw, .uploadFiles:
             return [
                 Header.contentType.rawValue: Header.json.rawValue,
                 Header.sesacKey.rawValue: APIKey.SesacKey
@@ -232,6 +238,12 @@ extension Router: TargetType {
                 Header.contentType.rawValue: Header.multipart.rawValue,
                 Header.sesacKey.rawValue: APIKey.SesacKey
             ]
+        case .withdraw, .viewPost, .deletePost, .idPost, .likePost, .like2Post, .viewLikePost, .viewLike2Post, .viewProfile, .viewAnotherProfile://follow, cancleFollow hashTags
+            return [
+                Header.authorization.rawValue: UserDefaultsManager.shared.token,
+                Header.sesacKey.rawValue: APIKey.SesacKey
+            ]
         }
+    
     }
 }

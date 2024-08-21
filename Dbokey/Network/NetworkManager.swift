@@ -12,8 +12,10 @@ import RxSwift
 struct NetworkManager {
     private init() {}
     static func viewPost(next: String, limit: String, productID: String) -> Single<ViewPostModel> {
-        let query = ViewPostQuery(next: next, limit: "4", product_id: productID)
-        let request = try! Router.viewPost(query: query).asURLRequest()
+        //let query = ViewPostQuery(next: next,limit: limit, product_id: productID)
+        let request = try! Router.viewPost(next: next, limit: limit, productID: productID).asURLRequest()
+        print("Request URL: \(request.url?.absoluteString ?? "")")
+            print("Request Headers: \(request.allHTTPHeaderFields ?? [:])")
         return Single.create { observer in
             AF.request(request)
                 .validate(statusCode: 200...299)

@@ -7,33 +7,42 @@
 
 import Foundation
 
+struct likeModel: Decodable {
+    var like_status: Bool
+}
+
 struct ViewPostModel: Decodable {
     let data: [PostData]
+    let next_cursor: String
 }
 struct PostData: Decodable {
     let post_id: String
-    let product_id: String
-    let title: String
-    let content: String
-    let content1: String
-    let content2: String
-    let content3: String
-    let content4: String
+    let product_id: String?
+    let title: String?
+    let content: String?
+    let content1: String?
+    let content2: String?
+    let content3: String?
+    let content4: String?
+    //let content5: String?
     let createdAt: String
     let creator: Creator
-    let files: [String]
+    let files: [String?]
     let likes: [String?]
     let likes2: [String?]
-    let comments: [Comments]
+    //let buyers: [String?]
+    //let hashTages: [String?]
+    let comments: [Comments?]
 }
 struct Creator: Decodable {
     let user_id: String
     let nick: String
-    let profileImage: String
+    let profileImage: String?
 }
 struct Comments: Decodable {
     let comment_id: String
     let content: String
+    let createdAt: String
     let creator: Creator
 }
 

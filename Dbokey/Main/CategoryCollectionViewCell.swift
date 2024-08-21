@@ -12,9 +12,11 @@ import SnapKit
 class CategoryCollectionViewCell: UICollectionViewCell {
     static let id = "CategoryCollectionViewCell"
 
-    let CategoryButton = UIButton().then {
-        $0.setTitleColor(.black, for: .normal)
-        $0.titleLabel?.font = .systemFont(ofSize: 15)
+    let CategoryLbel = UILabel().then {
+        //$0.setTitleColor(.black, for: .normal)
+        //$0.titleLabel?.font = .systemFont(ofSize: 15)
+        $0.textAlignment = .center
+        $0.font = .systemFont(ofSize: 15)
     }
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -22,10 +24,10 @@ class CategoryCollectionViewCell: UICollectionViewCell {
         configureLayout()
     }
     func configureHierarchy() {
-        contentView.addSubview(CategoryButton)
+        contentView.addSubview(CategoryLbel)
     }
     func configureLayout() {
-        CategoryButton.snp.makeConstraints { make in
+        CategoryLbel.snp.makeConstraints { make in
             make.edges.equalTo(contentView.safeAreaLayoutGuide)
         }
     }
