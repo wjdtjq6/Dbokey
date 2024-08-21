@@ -39,6 +39,19 @@ enum Router {
     case viewAnotherProfile(userID: String)
 }
 extension Router: TargetType {
+    var parameter: Alamofire.Parameters? {
+        switch self {
+        case .viewPost(let next, let limit, let productID):
+            return [
+                "next" : next,
+                "limit" : limit,
+                "product_id" : productID
+            ]
+        default:
+            return nil
+        }
+    }
+    
     var baseUrl: String {
         return APIKey.BaseURL + "v1"
     }
@@ -54,16 +67,17 @@ extension Router: TargetType {
             return .delete
         }
     }
-    var parameter: String? {
-        switch self {
-        case .viewPost(let next, let limit, let productID):
-            return "?next=\(next)&limit=\(limit)&product_id=\(productID)"
-        default:
-            return nil
-        }
-    }
+//    var parameter: String? {
+//        switch self {
+//        case .viewPost(let next, let limit, let productID):
+//            return "?next=\(next)&limit=\(limit)&product_id=\(productID)"
+//        default:
+//            return nil
+//        }
+//    }
     var queryItems: [URLQueryItem]? {
-        return nil
+        return /*[URLQueryItem(name: "product_id", value: productID)] 추가로 TargetType에서 asURLRequest추가해야함*/
+        nil
     }
     var body: Data? {
         switch self {
@@ -231,7 +245,6 @@ extension Router: TargetType {
                 Header.contentType.rawValue: Header.json.rawValue,
                 Header.sesacKey.rawValue: APIKey.SesacKey
             ]
-            
         case .uploadFiles, .editProfile:
             return [
                 Header.contentType.rawValue: Header.json.rawValue,
@@ -244,6 +257,5 @@ extension Router: TargetType {
                 Header.sesacKey.rawValue: APIKey.SesacKey
             ]
         }
-    
     }
 }

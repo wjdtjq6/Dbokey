@@ -13,17 +13,18 @@ protocol TargetType: URLRequestConvertible {
     var method: HTTPMethod { get }
     var path: String { get }
     var header: [String:String] { get }
-    var parameter: String? { get }
-    var queryItems: [URLQueryItem]? { get }
+    //var parameter: String? { get }
+    var parameter: Parameters? { get }
+    //var queryItems: [URLQueryItem]? { get }
     var body: Data? { get }
 }
 extension TargetType {
     func asURLRequest() throws -> URLRequest {
         let url = try baseUrl.asURL()
-        var request = try URLRequest(url: url.appendingPathComponent(path), method: method)
+        var request = try URLRequest(url: url.appendingPathComponent(path).absoluteString.removingPercentEncoding!, method: method)
         request.allHTTPHeaderFields = header
         request.httpBody = body
         //request.httpBody = parameters?.data(using: .utf8)
-        return request
+        return try URLEncoding.default.encode(request, with: parameter)//request
     }
 }

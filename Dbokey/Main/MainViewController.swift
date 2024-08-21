@@ -36,20 +36,22 @@ class MainViewController: UIViewController {
         let input = MainViewModel.Input(select: select, likeTap: cellLikeButtonTap)
         let output = viewModel.transform(input: input)
         //TopCollectionView
-        
         output.categories
             .bind(to: topCollectionView.rx.items(cellIdentifier: CategoryCollectionViewCell.id, cellType: CategoryCollectionViewCell.self)) { (row, element, cell) in
                 cell.CategoryLbel.text = "\(element.title)"
             }
             .disposed(by: disposeBag)
     
-        
         //BottomCollectionView
-//        output.list
-//            .bind(to: bottomCollectionView.rx.items(cellIdentifier: ListCollectionViewCell.id, cellType: ListCollectionViewCell.self)) { (row, element, cell) in
-//                let url = URL(string: element.urlStringArray)
-//                cell.imageView.kf.setImage(with: url)
-//            }
+            //data
+        output.list
+            .map({ $0.data })
+            .bind(to: bottomCollectionView.rx.items(cellIdentifier: ListCollectionViewCell.id, cellType: ListCollectionViewCell.self)) { (row, element, cell) in
+                //게시글 이미지조회 API써여함...
+                cell.title.text = element.title
+            }
+            .disposed(by: disposeBag)
+            //next_cursor
     }
     static func topLayout() -> UICollectionViewFlowLayout {
         let layout = UICollectionViewFlowLayout()

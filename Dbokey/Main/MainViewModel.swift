@@ -16,9 +16,9 @@ struct Category {
 
 class MainViewModel {
     let disposeBag = DisposeBag()
-//    //BottomCollectionView Data
-//    private var data = ViewPostModel(data: [])
-//    private lazy var list = BehaviorSubject(value: data)
+    //BottomCollectionView Data
+    private var data = ViewPostModel(data: [], next_cursor: "")
+    private lazy var list = BehaviorSubject(value: data)
 //    
     private var likeData = likeModel(like_status: false)
     private lazy var likeList = BehaviorSubject(value: likeData)
@@ -39,7 +39,7 @@ class MainViewModel {
     }
     struct Output {
         //탭한 결과 = 통신 응답
-//        let list: Observable<[String]>//BehaviorSubject<ViewPostModel>
+        let list: Observable<ViewPostModel>//BehaviorSubject<ViewPostModel>
         let likeList: BehaviorSubject<likeModel>
         let categories: Observable<[Category]>
 //        let select: ControlEvent<Category>
@@ -65,22 +65,21 @@ class MainViewModel {
         //select하면 통신!
         let listObservable = input.select
             .flatMapLatest { item in
-                NetworkManager.viewPost(next: "", limit: "4", productID: "\(item.productId)")
+                NetworkManager.viewPost(next: "", limit: "1", productID: "\(item.productId)")
                     .catch { error in
                         print(error.localizedDescription)
                         return Single.just(ViewPostModel(data: [], next_cursor: ""))
                     }
                     .debug("체크1")
-                    .map {$0.data}
+                    //.map {$0.data}
+                    .asObservable()
             }
-        
             .debug("체크2")
-            .subscribe { test in
-                print("🙂", test)
-            }
-            .disposed(by: disposeBag)
-
-        
-        return Output( likeList: likeList, categories: categories)
+//            .subscribe(onNext: { newData in
+//                self.list.onNext(newData)
+//            })
+//            .disposed(by: disposeBag)
+            .share(replay: 1, scope: .whileConnected)
+        return Output(list: listObservable, likeList: likeList, categories: categories)
     }
 }
