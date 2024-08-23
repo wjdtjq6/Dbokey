@@ -7,8 +7,9 @@
 
 import Foundation
 
-final class UserDefaultsManager {
-    private enum UserDefaultsKey: String {
+class UserDefaultsManager {
+    enum UserDefaultsKey: String {
+        case id
         case access
         case refresh
         case email
@@ -19,6 +20,14 @@ final class UserDefaultsManager {
     }
     static let shared = UserDefaultsManager()
     private init() {}
+    var user_id: String {
+        get {
+            UserDefaults.standard.string(forKey: UserDefaultsKey.id.rawValue) ?? ""
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: UserDefaultsKey.id.rawValue)
+        }
+    }
     var token: String {
         get {
             UserDefaults.standard.string(forKey: UserDefaultsKey.access.rawValue) ?? ""

@@ -30,29 +30,51 @@ class MainViewController: UIViewController {
         bind()
     }
     func bind() {
-        let cellLikeButtonTap = PublishSubject<Bool>()
+        let cellLikeButtonTap = PublishSubject<String>() // (postID, currentLikeStatus)
         let select = topCollectionView.rx.modelSelected(Category.self)
-        
+
         let input = MainViewModel.Input(select: select, likeTap: cellLikeButtonTap)
         let output = viewModel.transform(input: input)
-        //TopCollectionView
+        
+        // TopCollectionView
         output.categories
             .bind(to: topCollectionView.rx.items(cellIdentifier: CategoryCollectionViewCell.id, cellType: CategoryCollectionViewCell.self)) { (row, element, cell) in
                 cell.CategoryLbel.text = "\(element.title)"
             }
             .disposed(by: disposeBag)
-    
-        //BottomCollectionView
-            //data
+        
+        // BottomCollectionView
         output.list
             .map({ $0.data })
             .bind(to: bottomCollectionView.rx.items(cellIdentifier: ListCollectionViewCell.id, cellType: ListCollectionViewCell.self)) { (row, element, cell) in
-                //게시글 이미지조회 API써여함...
-                cell.title.text = element.title
+                cell.titleLabel.text = element.title
+                cell.location.text = element.content3
+                cell.price.text = (Int(element.content2!)?.formatted())! + "원"
+                
+                if let urlString = element.files.first, let url = URL(string: APIKey.BaseURL+"v1/" + urlString!) {
+                    let modifier = AnyModifier { request in
+                        var request = request
+                        request.setValue(APIKey.SesacKey, forHTTPHeaderField: "SesacKey")
+                        request.setValue(UserDefaultsManager.shared.token, forHTTPHeaderField: "Authorization")
+                        return request
+                    }
+                    cell.imageView.kf.setImage(with: url, options: [.requestModifier(modifier)])
+                }
+                
+                cell.likeFuncButton.isSelected = element.likes.contains(UserDefaultsManager.shared.user_id)
+                
+                cell.likeFuncButton.rx.tap
+                    .subscribe(with: self) { owner, _
+                        in
+                        cellLikeButtonTap.onNext(element.post_id)
+                    }
+                    .disposed(by: cell.disposeBag)
+                
+                cell.soldOut.isHidden = element.likes2.isEmpty ?  true : false
             }
             .disposed(by: disposeBag)
-            //next_cursor
     }
+
     static func topLayout() -> UICollectionViewFlowLayout {
         let layout = UICollectionViewFlowLayout()
         layout.itemSize = CGSize(width: 85, height: 50)

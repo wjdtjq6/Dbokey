@@ -8,54 +8,81 @@
 import UIKit
 import Then
 import SnapKit
+import RxSwift
 
 class ListCollectionViewCell: UICollectionViewCell {
     static let id = "ListCollectionViewCell"
+    let disposeBag = DisposeBag()
     let imageView = UIImageView().then {
         $0.backgroundColor = .red
+        $0.clipsToBounds = true
+        $0.layer.cornerRadius = 20
+        $0.contentMode = .scaleToFill
     }
-    let title = UILabel().then { _ in
-        //
+    let titleLabel = UILabel().then {
+        $0.font = .systemFont(ofSize: 15)
     }
-    let likesButton = UIButton().then {
-        $0.imageView?.contentMode = .scaleAspectFit
-        $0.imageEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 0)
-        $0.tintColor = .systemYellow
+    let location = UILabel().then {
+        $0.textColor = .gray
+        $0.font = .systemFont(ofSize: 13)
+    }
+    let price = UILabel().then {
+        $0.font = .boldSystemFont(ofSize: 15)
+    }
+    let soldOut = UILabel().then {
+        $0.backgroundColor = .lightGray
+        $0.clipsToBounds = true
         $0.layer.cornerRadius = 10
-        $0.titleLabel?.font = .systemFont(ofSize: 10)
-        $0.titleLabel?.text = "ASdasd"
-        $0.setTitle("거래완료", for: .normal)
+        $0.font = .boldSystemFont(ofSize: 12)
+        $0.text = "거래완료"
+        $0.textAlignment = .center
+        $0.isHidden = true
     }
     let likeFuncButton = UIButton().then {
-        $0.setImage(UIImage(systemName: "star"), for: .normal)
+        $0.setImage(UIImage(systemName: "bookmark"), for: .normal)
+        $0.setImage(UIImage(systemName: "bookmark.fill"), for: .selected)
+        $0.tintColor = .white
+        $0.transform = CGAffineTransform(scaleX: 2, y: 1.5) // 이미지를 2배로 확대
+        $0.backgroundColor = UIColor.black.withAlphaComponent(0.3)
     }
     override init(frame: CGRect) {
         super.init(frame: frame)
         configureHierarchy()
         configureLayout()
-        contentView.backgroundColor = .lightGray
     }
     func configureHierarchy() {
         contentView.addSubview(imageView)
-        contentView.addSubview(title)
-        contentView.addSubview(likesButton)
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(soldOut)
         contentView.addSubview(likeFuncButton)
+        contentView.addSubview(location)
+        contentView.addSubview(price)
     }
     func configureLayout() {
         imageView.snp.makeConstraints { make in
             make.top.horizontalEdges.equalTo(contentView.safeAreaLayoutGuide)
-            make.bottom.equalTo(contentView.safeAreaLayoutGuide).inset(50)
+            make.bottom.equalTo(contentView.safeAreaLayoutGuide).inset(60)
         }
-        title.snp.makeConstraints { make in
-            make.top.equalTo(imageView.snp.bottom)
-            make.leading.equalTo(contentView.safeAreaLayoutGuide)
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(imageView.snp.bottom).offset(4)
+            make.leading.equalTo(contentView.safeAreaLayoutGuide).offset(4)
         }
-        likesButton.snp.makeConstraints { make in
-            make.bottom.leading.equalTo(contentView.safeAreaLayoutGuide)
+        location.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(4)
+            make.leading.equalTo(contentView.safeAreaLayoutGuide).offset(4)
+        }
+        price.snp.makeConstraints { make in
+            make.top.equalTo(location.snp.bottom).offset(4)
+            make.leading.equalTo(contentView.safeAreaLayoutGuide.snp.leading).offset(4)
+        }
+        soldOut.snp.makeConstraints { make in
+            make.top.equalTo(location.snp.bottom).offset(4)
+            make.trailing.equalTo(contentView.safeAreaLayoutGuide).inset(4)
+            make.width.equalTo(55)
+            make.height.equalTo(20)
         }
         likeFuncButton.snp.makeConstraints { make in
-            make.bottom.trailing.equalTo(contentView.safeAreaLayoutGuide)
-            make.size.equalTo(25)
+            make.top.trailing.equalTo(contentView.safeAreaLayoutGuide).inset(20)
         }
     }
     required init?(coder: NSCoder) {

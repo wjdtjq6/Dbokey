@@ -47,11 +47,12 @@ extension Router: TargetType {
                 "limit" : limit,
                 "product_id" : productID
             ]
+        case .likePost(let query, _):
+            return ["like_status": query.like_status]
         default:
             return nil
         }
     }
-    
     var baseUrl: String {
         return APIKey.BaseURL + "v1"
     }
@@ -76,11 +77,20 @@ extension Router: TargetType {
 //        }
 //    }
     var queryItems: [URLQueryItem]? {
-        return /*[URLQueryItem(name: "product_id", value: productID)] 추가로 TargetType에서 asURLRequest추가해야함*/
-        nil
+        return /*[URLQueryItem(name: "product_id", value: productID)] 추가로 TargetType에서 asURLRequest추가해야함*/nil
     }
     var body: Data? {
         switch self {
+        case .likePost(let query, _):
+            let encoder = JSONEncoder()
+            do {
+                let data = try encoder.encode(query)
+                print("좋아요 데이터: \(data)")
+                return data
+            } catch {
+                print(error)
+                return nil
+            }
         case .join(let query):
             let encoder = JSONEncoder()
             do {
@@ -153,16 +163,6 @@ extension Router: TargetType {
                 print(error)
                 return nil
             }
-        case .likePost(let query,let postID):
-            let encoder = JSONEncoder()
-            do {
-                let data = try encoder.encode(query)
-                print("게시글 좋아요 true or false 데이터: \(data)")
-                return data
-            } catch {
-                print(error)
-                return nil
-            }
         case .like2Post(let query,let postID):
             let encoder = JSONEncoder()
             do {
@@ -206,23 +206,23 @@ extension Router: TargetType {
 //            return "/posts?next=\(next)&limit=\(limit)&product_id=\(productID)"
         case .idPost(let postID):
             return "/posts/\(postID)"
-        case .editPost(let postID):
+        case .editPost(_, let postID):
             return "/posts/\(postID)"
         case .deletePost(let postID):
             return "/posts/\(postID)"
         case .usersPost(let userID):
             return "/users/\(userID)"
-        case .writeComments(let postID):
+        case .writeComments(_, let postID):
             return "/posts/\(postID)/comments"
         case .editComments(_, let postID, let commentID):
             return "/posts/\(postID)/comments/\(commentID)"
         case .deleteComments(let postID, let commentID):
             return "/posts/\(postID)/comments/\(commentID)"
-        case .likePost(let postID):
+        case .likePost(_, let postID):
             return "/posts/\(postID)/like"
         case .viewLikePost:
             return "posts/likes/me"
-        case .like2Post(let postID):
+        case .like2Post(_, let postID):
             return "posts/\(postID)/like-2"
         case .viewLike2Post:
             return "posts/likes-2/me"
@@ -234,12 +234,12 @@ extension Router: TargetType {
     }
     var header: [String : String] {
         switch self {
-        case .join, .emailCheck, .login, .deletePost, .usersPost, .withdraw, .uploadFiles:
+        case .join, .emailCheck, .login, .usersPost:
             return [
                 Header.contentType.rawValue: Header.json.rawValue,
                 Header.sesacKey.rawValue: APIKey.SesacKey
             ]
-        case .refresh, .writePost, .editPost, .editComments,.writeComments, .deleteComments:
+        case .refresh, .writePost, .editPost, .editComments,.writeComments, .deleteComments, .likePost ,.like2Post://likePost contentType명세안되어있음
             return [
                 Header.authorization.rawValue: UserDefaultsManager.shared.token,
                 Header.contentType.rawValue: Header.json.rawValue,
@@ -251,7 +251,7 @@ extension Router: TargetType {
                 Header.contentType.rawValue: Header.multipart.rawValue,
                 Header.sesacKey.rawValue: APIKey.SesacKey
             ]
-        case .withdraw, .viewPost, .deletePost, .idPost, .likePost, .like2Post, .viewLikePost, .viewLike2Post, .viewProfile, .viewAnotherProfile://follow, cancleFollow hashTags
+        case .withdraw, .viewPost, .deletePost, .idPost, .viewLikePost, .viewLike2Post, .viewProfile, .viewAnotherProfile://follow, cancleFollow hashTags
             return [
                 Header.authorization.rawValue: UserDefaultsManager.shared.token,
                 Header.sesacKey.rawValue: APIKey.SesacKey

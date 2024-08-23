@@ -10,10 +10,6 @@ import RxSwift
 import RxCocoa
 
 final class LoginViewModel: UIView {
-    let account = [
-        "zk800@naver.com":"1234",
-        "zk800@gmail.com":"th1234"
-    ]
     let disposeBag = DisposeBag()
     struct Input {
         let textEmail:  ControlProperty<String?>

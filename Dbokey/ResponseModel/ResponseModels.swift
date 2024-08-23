@@ -12,7 +12,7 @@ struct likeModel: Decodable {
 }
 
 struct ViewPostModel: Decodable {
-    let data: [PostData]
+    var data: [PostData]
     let next_cursor: String
 }
 struct PostData: Decodable {
@@ -28,8 +28,8 @@ struct PostData: Decodable {
     let createdAt: String
     let creator: Creator
     let files: [String?]
-    let likes: [String?]
-    let likes2: [String?]
+    var likes: [String?]
+    var likes2: [String?]
     //let buyers: [String?]
     //let hashTages: [String?]
     let comments: [Comments?]
