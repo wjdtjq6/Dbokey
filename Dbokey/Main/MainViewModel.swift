@@ -36,47 +36,66 @@ class MainViewModel {
         //카테고리 선택하면 통신해야하고, 좋아요버튼 누르면 저장
         let select: ControlEvent<Category>
         let likeTap: Observable<String>
+        let selectCell: ControlEvent<IndexPath>
     }
     struct Output {
         //탭한 결과 = 통신 응답
-        let list: Observable<ViewPostModel>//BehaviorSubject<ViewPostModel>
-        //let likeList: BehaviorSubject<likeModel>
+        let list: Observable<ViewPostModel>
+        let likeList: BehaviorSubject<likeModel>
         let categories: Observable<[Category]>
-//        let select: ControlEvent<Category>
+        let selectCell: ControlEvent<IndexPath>
     }
     func transform(input: Input) -> Output {
-            let categories = Observable.just(self.categories)
-            
-            let listObservable = input.select
-                .flatMapLatest { item in
-                    NetworkManager.viewPost(next: "", limit: "10", productID: item.productId)
-                        .asObservable()
-                        .catch { error in
-                            print(error.localizedDescription)
-                            return Observable.just(ViewPostModel(data: [], next_cursor: ""))
-                        }
+        input.selectCell
+            .subscribe(with: self) { owner, _ in
+            }
+            .disposed(by: disposeBag)
+        
+        let categories = Observable.just(self.categories)
+        
+        let listObservable = input.select
+            .flatMapLatest { item in
+                NetworkManager.viewPost(next: "", limit: "10", productID: item.productId)
+                    .asObservable()
+                    .catch { error in
+                        print(error.localizedDescription)
+                        return Observable.just(ViewPostModel(data: [], next_cursor: ""))
+                    }
+            }
+            .share(replay: 1, scope: .whileConnected)
+    //MARK: 좋아요 버튼 기능 되도록 할 것(인섬니아로 바꿔놓으면 보이긴함)
+        input.likeTap
+            .withLatestFrom(listObservable) { (postID, viewPostModel) -> (String, ViewPostModel) in
+                return (postID, viewPostModel)
+            }
+            .debug("체크1")
+            .flatMapLatest { postID, viewPostModel -> Observable<ViewPostModel> in
+                // 선택된 게시글을 찾습니다.
+                guard let post = viewPostModel.data.first(where: { $0.post_id == postID }) else {
+                    return Observable.just(viewPostModel)
                 }
-                .share(replay: 1, scope: .whileConnected)
+                
+                // 현재 좋아요 상태를 확인합니다.
+                let userId = UserDefaults.standard.string(forKey: "id") ?? ""
+                print(userId,"현재 id")
+                let currentLikeStatus = post.likes.contains(userId)
+                print(currentLikeStatus, "현재 좋아요 상태") // 디버깅용 출력
 
-            input.likeTap
-                .withLatestFrom(listObservable) { (postID, viewPostModel) -> (String, ViewPostModel) in
-                    return (postID, viewPostModel)
-                }
-                .debug("체크1")
-                .flatMapLatest { postID, viewPostModel in
-                    let post = viewPostModel.data.first { $0.post_id == postID }
-                    let currentLikeStatus = post?.likes.contains(UserDefaults.standard.string(forKey: "user_id")) ?? false
-                    print(currentLikeStatus,"ㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇ")
-                    return NetworkManager.likePost(postID: postID, like_status: !currentLikeStatus)
-                        .asObservable()
-                        .map { _ in viewPostModel }
-                }
-                .debug("체크2")
-                .subscribe(with: self, onNext: { owner, updateModel in
-                    owner.list.onNext(updateModel)
-                    print(updateModel,"ㄴㄴㄴㄴㄴㄴㄴㄴㄴㄴㄴㄴㄴㄴㄴㄴ")
-                })
-                .disposed(by: disposeBag)
+                // 좋아요 상태를 변경하는 네트워크 요청
+                return NetworkManager.likePost(postID: "1", like_status: !currentLikeStatus)
+                    .asObservable()
+                    .catch { error in
+                        print(error.localizedDescription)
+                        return Observable.just(likeModel(like_status: currentLikeStatus))
+                    }
+                    .map { _ in viewPostModel } // 여기서 반환된 likeModel을 이용해 새 ViewPostModel을 생성하지 않음, 원래 모델 그대로 반환
+            }
+            .debug("체크2")
+            .subscribe(with: self, onNext: { owner, updateModel in
+                print(updateModel,"나를 찾아봐...")
+                owner.list.onNext(updateModel)
+            })
+            .disposed(by: disposeBag)
 
-            return Output(list: listObservable, categories: categories)
+        return Output(list: listObservable, likeList: likeList, categories: categories, selectCell: input.selectCell)
         }}

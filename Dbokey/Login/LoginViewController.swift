@@ -54,7 +54,8 @@ final class LoginViewController: UIViewController {
         let check = UIAlertAction(title: "확인", style: .default) { _ in
             if alert.title == self.messages[0] {
                 let vc = MainViewController()
-                self.setController(vc)
+                let nav = UINavigationController(rootViewController: vc)
+                self.setController(nav)
             }
         }
         alert.addAction(check)

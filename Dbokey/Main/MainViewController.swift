@@ -22,6 +22,7 @@ class MainViewController: UIViewController {
     }
     let viewModel = MainViewModel()
     let disposeBag = DisposeBag()
+    var postDetailData: PostData?
     override func viewDidLoad() {
         super.viewDidLoad()
         configureHierarchy()
@@ -33,7 +34,7 @@ class MainViewController: UIViewController {
         let cellLikeButtonTap = PublishSubject<String>() // (postID, currentLikeStatus)
         let select = topCollectionView.rx.modelSelected(Category.self)
 
-        let input = MainViewModel.Input(select: select, likeTap: cellLikeButtonTap)
+        let input = MainViewModel.Input(select: select, likeTap: cellLikeButtonTap, selectCell: bottomCollectionView.rx.itemSelected)
         let output = viewModel.transform(input: input)
         
         // TopCollectionView
@@ -47,6 +48,7 @@ class MainViewController: UIViewController {
         output.list
             .map({ $0.data })
             .bind(to: bottomCollectionView.rx.items(cellIdentifier: ListCollectionViewCell.id, cellType: ListCollectionViewCell.self)) { (row, element, cell) in
+                self.postDetailData = element//데이터 전달
                 cell.titleLabel.text = element.title
                 cell.location.text = element.content3
                 cell.price.text = (Int(element.content2!)?.formatted())! + "원"
@@ -60,17 +62,25 @@ class MainViewController: UIViewController {
                     }
                     cell.imageView.kf.setImage(with: url, options: [.requestModifier(modifier)])
                 }
-                
+                cell.soldOut.isHidden = element.likes2.isEmpty ?  true : false
+
                 cell.likeFuncButton.isSelected = element.likes.contains(UserDefaultsManager.shared.user_id)
-                
+                print(cell.likeFuncButton.isSelected,"셀렉됐냐????")
+                print(element.likes.contains(UserDefaultsManager.shared.user_id),"마포대교는 문어졌냐")
                 cell.likeFuncButton.rx.tap
                     .subscribe(with: self) { owner, _
                         in
                         cellLikeButtonTap.onNext(element.post_id)
                     }
                     .disposed(by: cell.disposeBag)
-                
-                cell.soldOut.isHidden = element.likes2.isEmpty ?  true : false
+            }
+            .disposed(by: disposeBag)
+        //화면 전환
+        output.selectCell
+            .bind(with: self) { owner, indexPath in
+                let vc = DetailViewController()
+                vc.data = self.postDetailData
+                owner.navigationController?.pushViewController(vc, animated: true)
             }
             .disposed(by: disposeBag)
     }
@@ -114,6 +124,12 @@ class MainViewController: UIViewController {
     }
     func configureUI() {
         view.backgroundColor = .white
+    }
+    override func viewWillAppear(_ animated: Bool) {
+      navigationController?.setNavigationBarHidden(true, animated: true)// 뷰 컨트롤러가 나타날 때 숨기기
+    }
+    override func viewWillDisappear(_ animated: Bool) {
+      navigationController?.setNavigationBarHidden(false, animated: true)// 뷰 컨트롤러가 사라질 때 나타내기
     }
 }/*
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {

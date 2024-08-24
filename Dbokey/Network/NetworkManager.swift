@@ -14,8 +14,6 @@ struct NetworkManager {
     static func likePost(postID: String, like_status: Bool) ->Observable<likeModel> {
         let query = likePostQuery(like_status: like_status)
         let request = try! Router.likePost(query: query, postID: postID).asURLRequest()
-        print("Request URL: \(request.url?.absoluteString ?? "")")
-        print("Request Headers: \(request.allHTTPHeaderFields ?? [:])")
         print("Request Body: \(request.httpBody?.base64EncodedString())")
         return Observable.create { observer in
             AF.request(request)
@@ -35,8 +33,6 @@ struct NetworkManager {
     static func viewPost(next: String, limit: String, productID: String) -> Single<ViewPostModel> {
         //let query = ViewPostQuery(next: next,limit: limit, product_id: productID)
         let request = try! Router.viewPost(next: next, limit: limit, productID: productID).asURLRequest()
-        print("Request URL: \(request.url?.absoluteString ?? "")")
-        print("Request Headers: \(request.allHTTPHeaderFields ?? [:])")
         return Single.create { observer in
             AF.request(request)
                 .validate(statusCode: 200...299)

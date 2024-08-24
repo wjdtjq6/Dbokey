@@ -19,8 +19,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let vc = LoginViewController()
         let nav = UINavigationController(rootViewController: vc)
-        window?.rootViewController = nav // sb에서 entrypoint처럼 동작
-        window?.makeKeyAndVisible()  // show
+        window?.rootViewController = nav
+        window?.makeKeyAndVisible()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
