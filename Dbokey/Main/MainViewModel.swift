@@ -16,6 +16,7 @@ struct Category {
 
 class MainViewModel {
     let disposeBag = DisposeBag()
+    var category = ""
     //BottomCollectionView Data
     private var data = ViewPostModel(data: [], next_cursor: "")
     private lazy var list = BehaviorSubject(value: data)
@@ -30,7 +31,6 @@ class MainViewModel {
         Category(productId: "dbokey_market_artisan", title: "아티산"),
         Category(productId: "dbokey_market_switch", title: "스위치"),
         Category(productId: "dbokey_market_etc", title: "기타"),
-        
     ]
     struct Input {
         //카테고리 선택하면 통신해야하고, 좋아요버튼 누르면 저장
@@ -44,6 +44,7 @@ class MainViewModel {
         let likeList: BehaviorSubject<likeModel>
         let categories: Observable<[Category]>
         let selectCell: ControlEvent<IndexPath>
+        let selectedCategoryTitle: Observable<String> // 카테고리 제목을 전달할 Observable
     }
     func transform(input: Input) -> Output {
         input.selectCell
@@ -52,6 +53,9 @@ class MainViewModel {
             .disposed(by: disposeBag)
         
         let categories = Observable.just(self.categories)
+        //카테고리 제목 전달
+        let selectedCategoryTitle = input.select
+            .map { $0.title }
         
         let listObservable = input.select
             .flatMapLatest { item in
@@ -63,6 +67,7 @@ class MainViewModel {
                     }
             }
             .share(replay: 1, scope: .whileConnected)
+/*
     //MARK: 좋아요 버튼 기능 되도록 할 것(인섬니아로 바꿔놓으면 보이긴함)
         input.likeTap
             .withLatestFrom(listObservable) { (postID, viewPostModel) -> (String, ViewPostModel) in
@@ -96,6 +101,6 @@ class MainViewModel {
                 owner.list.onNext(updateModel)
             })
             .disposed(by: disposeBag)
-
-        return Output(list: listObservable, likeList: likeList, categories: categories, selectCell: input.selectCell)
+*/
+        return Output(list: listObservable, likeList: likeList, categories: categories, selectCell: input.selectCell, selectedCategoryTitle: selectedCategoryTitle)
         }}

@@ -23,6 +23,7 @@ class MainViewController: UIViewController {
     let viewModel = MainViewModel()
     let disposeBag = DisposeBag()
     var postDetailData: PostData?
+    var category = ""
     override func viewDidLoad() {
         super.viewDidLoad()
         configureHierarchy()
@@ -40,9 +41,15 @@ class MainViewController: UIViewController {
         // TopCollectionView
         output.categories
             .bind(to: topCollectionView.rx.items(cellIdentifier: CategoryCollectionViewCell.id, cellType: CategoryCollectionViewCell.self)) { (row, element, cell) in
-                cell.CategoryLbel.text = "\(element.title)"
+                cell.CategoryLbel.text = element.title
             }
             .disposed(by: disposeBag)
+            // 선택된 카테고리 제목을 사용
+       output.selectedCategoryTitle
+           .subscribe(onNext: { title in
+               self.category = title
+           })
+           .disposed(by: disposeBag)
         
         // BottomCollectionView
         output.list
@@ -80,6 +87,7 @@ class MainViewController: UIViewController {
             .bind(with: self) { owner, indexPath in
                 let vc = DetailViewController()
                 vc.data = self.postDetailData
+                vc.category = self.category
                 owner.navigationController?.pushViewController(vc, animated: true)
             }
             .disposed(by: disposeBag)
@@ -90,6 +98,7 @@ class MainViewController: UIViewController {
         layout.itemSize = CGSize(width: 85, height: 50)
         layout.scrollDirection = .horizontal
         layout.sectionInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
+        //layout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
         return layout
     }
     static func bottomLayout() -> UICollectionViewFlowLayout {
@@ -125,12 +134,12 @@ class MainViewController: UIViewController {
     func configureUI() {
         view.backgroundColor = .white
     }
-    override func viewWillAppear(_ animated: Bool) {
-      navigationController?.setNavigationBarHidden(true, animated: true)// 뷰 컨트롤러가 나타날 때 숨기기
-    }
-    override func viewWillDisappear(_ animated: Bool) {
-      navigationController?.setNavigationBarHidden(false, animated: true)// 뷰 컨트롤러가 사라질 때 나타내기
-    }
+//    override func viewWillAppear(_ animated: Bool) {
+//      navigationController?.setNavigationBarHidden(true, animated: true)// 뷰 컨트롤러가 나타날 때 숨기기
+//    }
+//    override func viewWillDisappear(_ animated: Bool) {
+//      navigationController?.setNavigationBarHidden(false, animated: true)// 뷰 컨트롤러가 사라질 때 나타내기
+//    }
 }/*
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if collectionView == topCollectionView {

@@ -11,6 +11,25 @@ import RxSwift
 
 struct NetworkManager {
     private init() {}
+    static func likePost(postID: String, like_status: Bool, completion: @escaping (Result<likeModel, Error>) -> Void) {
+        let query = likePostQuery(like_status: like_status)
+        let request = try! Router.likePost(query: query, postID: postID).asURLRequest()
+        print("Request Body: \(request.httpBody?.base64EncodedString())")
+        AF.request(request)
+            .validate(statusCode: 200...299)
+            .responseDecodable(of: likeModel.self) { response in
+                switch response.result {
+                case .success(let success):
+                    print("성공 안보이지?")
+                    completion(.success(success))
+                case .failure(let error):
+                    print("실패 안보이지?")
+                    completion(.failure(error))
+                }
+            }
+    }
+
+    /*
     static func likePost(postID: String, like_status: Bool) ->Observable<likeModel> {
         let query = likePostQuery(like_status: like_status)
         let request = try! Router.likePost(query: query, postID: postID).asURLRequest()
@@ -30,6 +49,7 @@ struct NetworkManager {
             return Disposables.create()
         }.debug("likePost API 통신")
     }
+     */
     static func viewPost(next: String, limit: String, productID: String) -> Single<ViewPostModel> {
         //let query = ViewPostQuery(next: next,limit: limit, product_id: productID)
         let request = try! Router.viewPost(next: next, limit: limit, productID: productID).asURLRequest()
