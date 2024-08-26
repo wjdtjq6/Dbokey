@@ -22,7 +22,7 @@ class MainViewController: UIViewController {
     }
     let viewModel = MainViewModel()
     let disposeBag = DisposeBag()
-    var postDetailData: PostData?
+    var postDetailData: [PostData] = []
     var category = ""
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,9 +32,9 @@ class MainViewController: UIViewController {
         bind()
     }
     func bind() {
-        let cellLikeButtonTap = PublishSubject<String>() // (postID, currentLikeStatus)
-        let select = topCollectionView.rx.modelSelected(Category.self)
-
+        let cellLikeButtonTap = PublishSubject<String>()
+        let select = topCollectionView.rx.modelSelected(CategoryItem.self)
+        
         let input = MainViewModel.Input(select: select, likeTap: cellLikeButtonTap, selectCell: bottomCollectionView.rx.itemSelected)
         let output = viewModel.transform(input: input)
         
@@ -44,23 +44,30 @@ class MainViewController: UIViewController {
                 cell.CategoryLbel.text = element.title
             }
             .disposed(by: disposeBag)
-            // 선택된 카테고리 제목을 사용
-       output.selectedCategoryTitle
-           .subscribe(onNext: { title in
-               self.category = title
-           })
-           .disposed(by: disposeBag)
+        
+        // 선택된 카테고리 제목을 사용
+        output.selectedCategoryTitle
+            .subscribe(onNext: { [weak self] title in
+                self?.category = title
+            })
+            .disposed(by: disposeBag)
         
         // BottomCollectionView
         output.list
-            .map({ $0.data })
+            .subscribe(onNext: { [weak self] data in
+                self?.postDetailData = data//데이터 전달하네 아래 애들이 핋요할까?
+                self?.bottomCollectionView.reloadData()
+            })
+            .disposed(by: disposeBag)
+        
+        output.list
+           // .map({ $0.data })//예는 [PostData]
             .bind(to: bottomCollectionView.rx.items(cellIdentifier: ListCollectionViewCell.id, cellType: ListCollectionViewCell.self)) { (row, element, cell) in
-                self.postDetailData = element//데이터 전달
-                cell.titleLabel.text = element.title
-                cell.location.text = element.content3
-                cell.price.text = (Int(element.content2!)?.formatted())! + "원"
+                cell.titleLabel.text = self.postDetailData[row].title
+                cell.location.text = self.postDetailData[row].content3
+                cell.price.text = Int(self.postDetailData[row].content2!)?.formatted()//(Int(element.content2!)?.formatted())! + "원"
                 
-                if let urlString = element.files.first, let url = URL(string: APIKey.BaseURL+"v1/" + urlString!) {
+                if let urlString = self.postDetailData[row].files.first, let url = URL(string: APIKey.BaseURL+"v1/"+urlString!) {//element.files.first, let url = URL(string: APIKey.BaseURL+"v1/" + urlString!) {
                     let modifier = AnyModifier { request in
                         var request = request
                         request.setValue(APIKey.SesacKey, forHTTPHeaderField: "SesacKey")
@@ -69,15 +76,15 @@ class MainViewController: UIViewController {
                     }
                     cell.imageView.kf.setImage(with: url, options: [.requestModifier(modifier)])
                 }
-                cell.soldOut.isHidden = element.likes2.isEmpty ?  true : false
+                cell.soldOut.isHidden = self.postDetailData[row].likes2.isEmpty ? true : false//element.likes2.isEmpty ?  true : false
 
-                cell.likeFuncButton.isSelected = element.likes.contains(UserDefaultsManager.shared.user_id)
-                print(cell.likeFuncButton.isSelected,"셀렉됐냐????")
-                print(element.likes.contains(UserDefaultsManager.shared.user_id),"마포대교는 문어졌냐")
+                cell.likeFuncButton.isSelected = self.postDetailData[row].likes.contains(UserDefaultsManager.shared.user_id)//element.likes.contains(UserDefaultsManager.shared.user_id)
+    //                print(cell.likeFuncButton.isSelected,"셀렉됐냐????")
+    //                print(element.likes.contains(UserDefaultsManager.shared.user_id),"마포대교는 문어졌냐")
                 cell.likeFuncButton.rx.tap
                     .subscribe(with: self) { owner, _
                         in
-                        cellLikeButtonTap.onNext(element.post_id)
+                        cellLikeButtonTap.onNext(self.postDetailData[row].post_id)//element.post_id)
                     }
                     .disposed(by: cell.disposeBag)
             }
@@ -87,12 +94,12 @@ class MainViewController: UIViewController {
             .bind(with: self) { owner, indexPath in
                 let vc = DetailViewController()
                 vc.data = self.postDetailData
+                vc.row = indexPath.row
                 vc.category = self.category
                 owner.navigationController?.pushViewController(vc, animated: true)
             }
-            .disposed(by: disposeBag)
-    }
-
+            .disposed(by: disposeBag)    }
+    
     static func topLayout() -> UICollectionViewFlowLayout {
         let layout = UICollectionViewFlowLayout()
         layout.itemSize = CGSize(width: 85, height: 50)
@@ -133,6 +140,16 @@ class MainViewController: UIViewController {
     }
     func configureUI() {
         view.backgroundColor = .white
+        let rightBarButton = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(barButtonCliecked))
+        navigationItem.rightBarButtonItem = rightBarButton
+        rightBarButton.tintColor = .black
+    }
+    @objc func barButtonCliecked() {
+        print(#function)
+        let vc = WriteViewController()
+        let nav = UINavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .fullScreen
+        present(nav, animated: true)
     }
 //    override func viewWillAppear(_ animated: Bool) {
 //      navigationController?.setNavigationBarHidden(true, animated: true)// 뷰 컨트롤러가 나타날 때 숨기기

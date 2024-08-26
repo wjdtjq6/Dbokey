@@ -10,7 +10,8 @@ import Then
 import SnapKit
 import Kingfisher
 class DetailViewController: UIViewController {
-    var data: PostData?
+    var data: [PostData]?
+    var row = 0
     var category = ""
     let collectionView: UICollectionView = {
            let layout = DetailViewController.layout()
@@ -37,7 +38,7 @@ class DetailViewController: UIViewController {
     //MARK: 좋아요 버튼 기능 되도록 할 것(인섬니아로 바꿔놓으면 보이긴함)
     @objc func likeFuncButtonClicked() {
         if likeFuncButton.isSelected {
-            NetworkManager.likePost(postID: data!.post_id, like_status: false) { result in
+            NetworkManager.likePost(postID: data![row].post_id, like_status: false) { result in
                 switch result {
                     case .success:
                         DispatchQueue.main.async {
@@ -50,7 +51,7 @@ class DetailViewController: UIViewController {
             }
         }
         else {
-            NetworkManager.likePost(postID: data!.post_id, like_status: true) { result in
+            NetworkManager.likePost(postID:  data![row].post_id, like_status: true) { result in
                 switch result {
                     case .success:
                         DispatchQueue.main.async {
@@ -91,6 +92,9 @@ class DetailViewController: UIViewController {
     }
     let separator = UIView().then {
         $0.backgroundColor = .gray
+    }
+    let brandLabel = UILabel().then {
+        $0.font = .boldSystemFont(ofSize: 17)
     }
     let titleLabel = UILabel().then {
         $0.font = .boldSystemFont(ofSize: 17)
@@ -137,6 +141,7 @@ class DetailViewController: UIViewController {
         view.addSubview(vSeparator)
         view.addSubview(separator)
         
+        view.addSubview(brandLabel)
         view.addSubview(titleLabel)
         view.addSubview(categoryLabel)
         view.addSubview(createdLabel)
@@ -189,9 +194,13 @@ class DetailViewController: UIViewController {
             make.width.equalTo(UIScreen.main.bounds.width/2-20)
             make.height.equalTo(1)
         }
-        titleLabel.snp.makeConstraints { make in
+        brandLabel.snp.makeConstraints { make in
             make.top.equalTo(separator.snp.bottom).offset(20)
             make.leading.equalTo(view).offset(20)
+        }
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(separator.snp.bottom).offset(20)
+            make.leading.equalTo(brandLabel.snp.trailing)
         }
         categoryLabel.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom).offset(10)
@@ -226,25 +235,26 @@ class DetailViewController: UIViewController {
     }
     func configureUI() {
         view.backgroundColor = .white
-        likeFuncButton.isSelected = data!.likes.contains(UserDefaultsManager.shared.user_id)
+        likeFuncButton.isSelected =  data![row].likes.contains(UserDefaultsManager.shared.user_id)
         
-        nickLabel.text = data?.creator.nick
-        locationLabel.text = data?.content3//content2ㅇ로 바뀔 예정
-        if data!.likes2.isEmpty {
+        nickLabel.text =  data![row].creator.nick
+        locationLabel.text =  data![row].content3//content2ㅇ로 바뀔 예정
+        if  data![row].likes2.isEmpty {
             soldoutLabel.text = ""
         } else {
             soldoutLabel.text = "거래완료"
         }
-        newOrusedLabel.text = data?.content4//conten3으로 바뀔 예정
+        newOrusedLabel.text =  data![row].content4//conten3으로 바뀔 예정
         
-        titleLabel.text = data?.title
+        brandLabel.text = "["+( data![row].content1)!+"] "
+        titleLabel.text =  data![row].title
         let text = category
         let attributes: [NSAttributedString.Key: Any] = [
             .underlineStyle: NSUnderlineStyle.single.rawValue,
             .underlineColor: UIColor.darkGray]
         let attributedString = NSAttributedString(string: text, attributes: attributes)
         categoryLabel.attributedText = attributedString
-        let dateString = data!.createdAt
+        let dateString =  data![row].createdAt
         let dateFormatter = ISO8601DateFormatter()
         dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds] // 옵션 설정
         guard let date = dateFormatter.date(from: dateString) else {
@@ -256,25 +266,25 @@ class DetailViewController: UIViewController {
         let hours = timeInterval / 3600
         let hoursAgo = Int(hours)
         createdLabel.text = hoursAgo >= 24 ? "• \(hoursAgo/24)일 전" : "• \(hoursAgo%24)시간 전"
-        priceLabel.text = (Int((data?.content2)!)?.formatted())! + "원"
-        contentLabel.text = data?.content
-        commentLabel.text = "댓글\(data?.comments.count ?? 0)"
+        priceLabel.text = (Int(( data![row].content2)!)?.formatted())! + "원"
+        contentLabel.text =  data![row].content
+        commentLabel.text = "댓글\( data![row].comments.count ?? 0)"
         tableView.rowHeight = 30
     }
 }
 extension DetailViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        (data!.comments.count)
+        ( data![row].comments.count)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: CommentTableViewCell.identifier, for: indexPath) as! CommentTableViewCell
-        if data!.comments[indexPath.row]?.creator.nick == data!.creator.nick {
-            cell.nickLabel.text = "작성자 " + (data?.comments[indexPath.row]?.creator.nick)! + ": "
+        if  data![row].comments[indexPath.row]?.creator.nick ==  data![row].creator.nick {
+            cell.nickLabel.text = "작성자 " + ( data![row].comments[indexPath.row]?.creator.nick)! + ": "
         } else {
-            cell.nickLabel.text = (data?.comments[indexPath.row]?.creator.nick)! + ": "
+            cell.nickLabel.text = ( data![row].comments[indexPath.row]?.creator.nick)! + ": "
         }
-        cell.commentLabel.text = data?.comments[indexPath.row]?.content
+        cell.commentLabel.text =  data![row].comments[indexPath.row]?.content
         return cell
     }
     
@@ -282,14 +292,14 @@ extension DetailViewController: UITableViewDelegate, UITableViewDataSource {
 }
 extension DetailViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        data!.files.count
+        data![row].files.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailCollectionViewCell.identifier, for: indexPath) as! DetailCollectionViewCell
         cell.backgroundColor = UIColor(red: .random(in: 0...1), green: .random(in: 0...1), blue: .random(in: 0...1), alpha: 1)
 
-        if let urlString = data!.files[indexPath.item], let url = URL(string: APIKey.BaseURL+"v1/" + urlString) {
+        if let urlString =  data![row].files[indexPath.item], let url = URL(string: APIKey.BaseURL+"v1/" + urlString) {
             let modifier = AnyModifier { request in
                 var request = request
                 request.setValue(APIKey.SesacKey, forHTTPHeaderField: "SesacKey")

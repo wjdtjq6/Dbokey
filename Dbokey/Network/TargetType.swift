@@ -15,7 +15,7 @@ protocol TargetType: URLRequestConvertible {
     var header: [String:String] { get }
     //var parameter: String? { get }
     var parameter: Parameters? { get }
-    //var queryItems: [URLQueryItem]? { get }
+    var queryItems: [URLQueryItem]? { get }
     var body: Data? { get }
 }
 extension TargetType {
@@ -25,6 +25,6 @@ extension TargetType {
         request.allHTTPHeaderFields = header
         request.httpBody = body
         //request.httpBody = parameters?.data(using: .utf8)
-        return try URLEncoding.default.encode(request, with: parameter)//request
+        return try URLEncoding.default.encode(request, with: parameter)//
     }
 }

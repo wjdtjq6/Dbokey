@@ -50,9 +50,36 @@ struct NetworkManager {
         }.debug("likePost API 통신")
     }
      */
-    static func viewPost(next: String, limit: String, productID: String) -> Single<ViewPostModel> {
-        //let query = ViewPostQuery(next: next,limit: limit, product_id: productID)
-        let request = try! Router.viewPost(next: next, limit: limit, productID: productID).asURLRequest()
+    static func viewPost2(next: String, limit: String, productId: String) -> Single<ViewPostModel> {
+        var request = try! Router.viewPost2(next: next, limit: limit, productId: productId).asURLRequest()
+        // URLComponents를 사용해 queryItems를 추가
+        if var urlComponents = URLComponents(url: request.url!, resolvingAgainstBaseURL: false) {
+            urlComponents.queryItems = Router.viewPost2(next: next, limit: limit, productId: productId).queryItems
+            request.url = urlComponents.url
+        }
+        print("Complete URL: \(request.url?.absoluteString ?? "Invalid URL")")
+        return Single.create { observer in
+            AF.request(request)
+                .validate(statusCode: 200...299)
+                .responseDecodable(of: ViewPostModel.self) { response in
+                    switch response.result {
+                    case .success(let success):
+                        observer(.success(success))
+                    case .failure(let error):
+                        observer(.failure(error))
+                    }
+                }
+            return Disposables.create()
+        }.debug("viewPost2 API 통신")
+    }
+    static func viewPost(next: String, limit: String, productId: String, productId1: String, productId2: String, productId3: String, productId4: String, productId5: String) -> Single<ViewPostModel> {
+        var request = try! Router.viewPost(next: next, limit: limit, productId: productId, productId1: productId1, productId2: productId2, productId3: productId3, productId4: productId4, productId5: productId5).asURLRequest()
+        // URLComponents를 사용해 queryItems를 추가
+        if var urlComponents = URLComponents(url: request.url!, resolvingAgainstBaseURL: false) {
+            urlComponents.queryItems = Router.viewPost(next: next, limit: limit, productId: productId, productId1: productId1, productId2: productId2, productId3: productId3, productId4: productId4, productId5: productId5).queryItems
+            request.url = urlComponents.url
+        }
+        print("Complete URL: \(request.url?.absoluteString ?? "Invalid URL")")
         return Single.create { observer in
             AF.request(request)
                 .validate(statusCode: 200...299)

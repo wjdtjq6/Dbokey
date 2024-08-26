@@ -18,7 +18,8 @@ enum Router {
     //포스트(게시글)
     case uploadFiles(query: uploadFilesQuery)
     case writePost(query: writeEditPostQuery)
-    case viewPost(next: String, limit: String, productID: String)
+    case viewPost(next: String, limit: String, productId: String, productId1: String, productId2: String, productId3: String, productId4: String, productId5: String)//전체
+    case viewPost2(next: String, limit: String, productId: String)//나머지
     case idPost(postID: String)
     case editPost(query: writeEditPostQuery, postID: String)
     case deletePost(postID: String)
@@ -41,12 +42,6 @@ enum Router {
 extension Router: TargetType {
     var parameter: Alamofire.Parameters? {
         switch self {
-        case .viewPost(let next, let limit, let productID):
-            return [
-                "next" : next,
-                "limit" : limit,
-                "product_id" : productID
-            ]
         case .likePost(let query, _):
             return ["like_status": query.like_status]
         default:
@@ -60,7 +55,7 @@ extension Router: TargetType {
         switch self {
         case .join, .emailCheck, .login, .uploadFiles, .writePost, .writeComments, .likePost, .like2Post:
             return .post
-        case .refresh, .withdraw, .viewPost, .idPost, .usersPost, .viewLikePost, .viewLike2Post, .viewProfile, .viewAnotherProfile:
+        case .refresh, .withdraw, .viewPost, .viewPost2, .idPost, .usersPost, .viewLikePost, .viewLike2Post, .viewProfile, .viewAnotherProfile:
             return .get
         case .editPost, .editComments, .editProfile:
             return .put
@@ -68,16 +63,28 @@ extension Router: TargetType {
             return .delete
         }
     }
-//    var parameter: String? {
-//        switch self {
-//        case .viewPost(let next, let limit, let productID):
-//            return "?next=\(next)&limit=\(limit)&product_id=\(productID)"
-//        default:
-//            return nil
-//        }
-//    }
     var queryItems: [URLQueryItem]? {
-        return /*[URLQueryItem(name: "product_id", value: productID)] 추가로 TargetType에서 asURLRequest추가해야함*/nil
+        switch self {
+        case .viewPost(let next, let limit, let productId, let productId1, let productId2, let productId3, let productId4, let productId5):
+            return [
+                URLQueryItem(name: "next", value: next),
+                URLQueryItem(name: "limit", value: limit),
+                URLQueryItem(name: "product_id", value: productId),
+                URLQueryItem(name: "product_id", value: productId1),
+                URLQueryItem(name: "product_id", value: productId2),
+                URLQueryItem(name: "product_id", value: productId3),
+                URLQueryItem(name: "product_id", value: productId4),
+                URLQueryItem(name: "product_id", value: productId5)
+            ]
+        case .viewPost2(let next, let limit, let productId):
+            return [
+                URLQueryItem(name: "next", value: next),
+                URLQueryItem(name: "limit", value: limit),
+                URLQueryItem(name: "product_id", value: productId)
+            ]
+        default:
+            return nil
+        }
     }
     var body: Data? {
         switch self {
@@ -200,7 +207,7 @@ extension Router: TargetType {
             return "/v1/users/withdraw"
         case .uploadFiles:
             return "/posts/files"
-        case .writePost ,.viewPost:
+        case .writePost ,.viewPost,.viewPost2:
             return "/posts"
 //        case .viewPost(let next, let limit, let productID):
 //            return "/posts?next=\(next)&limit=\(limit)&product_id=\(productID)"
@@ -251,7 +258,7 @@ extension Router: TargetType {
                 Header.contentType.rawValue: Header.multipart.rawValue,
                 Header.sesacKey.rawValue: APIKey.SesacKey
             ]
-        case .withdraw, .viewPost, .deletePost, .idPost, .viewLikePost, .viewLike2Post, .viewProfile, .viewAnotherProfile://follow, cancleFollow hashTags
+        case .withdraw, .viewPost, .viewPost2, .deletePost, .idPost, .viewLikePost, .viewLike2Post, .viewProfile, .viewAnotherProfile://follow, cancleFollow hashTags
             return [
                 Header.authorization.rawValue: UserDefaultsManager.shared.token,
                 Header.sesacKey.rawValue: APIKey.SesacKey
