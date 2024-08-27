@@ -11,7 +11,37 @@ import RxSwift
 
 struct NetworkManager {
     private init() {}
-    
+    static func uploadFiles(images: [Data?], completion: @escaping (Result<uploadFilesModel, Error>) -> Void) {
+        let header:HTTPHeaders = [
+            Header.sesacKey.rawValue: APIKey.SesacKey,
+            Header.authorization.rawValue: UserDefaultsManager.shared.token,
+            Header.contentType.rawValue: Header.multipart.rawValue
+        ]
+        AF.upload(multipartFormData: { multipartFormData in
+            for (index, imageData) in images.enumerated() {
+                if let data = imageData {
+                    multipartFormData.append(data, withName: "files", fileName: "image\(index + 1).jpeg", mimeType: "image/jpeg")
+                }
+            }
+        }, to: try! Router.uploadFiles(query: uploadFilesQuery(files: Data())).asURLRequest().url!, headers: header)
+        .validate(statusCode: 200...299)
+        .responseDecodable(of: uploadFilesModel.self) { response in
+            switch response.result {
+            case .success(let value):
+                dump(value.files)
+                self.uploadPostContents()
+                completion(.success(value))
+                
+            case .failure(let error):
+                completion(.failure(error))
+                print(error)
+            }
+        }
+    }
+    static func uploadPostContents() {
+        print(#function)
+        
+    }
     static func likePost(postID: String, like_status: Bool, completion: @escaping (Result<likeModel, Error>) -> Void) {
         let query = likePostQuery(like_status: like_status)
         let request = try! Router.likePost(postID: postID, query: query).asURLRequest()

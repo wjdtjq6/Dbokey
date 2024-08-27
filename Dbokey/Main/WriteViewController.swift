@@ -195,8 +195,24 @@ class WriteViewController: UIViewController {
         print(#function)
         uploadPostFiles()
     }
+    
     func uploadPostFiles() {
-        
+        let image1 = imageView1.image?.pngData()
+        let image2 = imageView2.image?.pngData()
+        let image3 = imageView3.image?.pngData()
+        let image4 = imageView4.image?.pngData()
+        let image5 = imageView5.image?.pngData()
+
+        NetworkManager.uploadFiles(images: [image1, image2, image3, image4, image5]) { result in
+            switch result {
+            case .success(let success):
+                dump(success.files)
+                //self.uploadPostContents()
+            case .failure(let error):
+                print(error)
+
+            }
+        }
     }
 }
 extension WriteViewController: UITextViewDelegate, PHPickerViewControllerDelegate {

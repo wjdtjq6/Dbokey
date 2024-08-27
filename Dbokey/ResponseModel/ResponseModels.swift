@@ -7,6 +7,10 @@
 
 import Foundation
 
+struct uploadFilesModel: Decodable {
+    let files: [String]
+}
+
 struct likeModel: Decodable {
     var like_status: Bool
 }

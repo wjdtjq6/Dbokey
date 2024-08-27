@@ -42,8 +42,6 @@ enum Router {
 extension Router: TargetType {
     var parameter: Alamofire.Parameters? {
         switch self {
-//        case .likePost(let bool):
-//            return ["like_status": bool]
         default:
             return nil
         }
@@ -88,7 +86,17 @@ extension Router: TargetType {
     }
     var body: Data? {
         switch self {
-        case .likePost(let postID, let query)://1
+        case .uploadFiles(let query):
+            let encoder = JSONEncoder()
+            do {
+                let data = try encoder.encode(query)
+                print("업로드 데이터: \(data)")
+                return data
+            } catch {
+                print(error)
+                return nil
+            }
+        case .likePost(_, let query)://1
             //let param: [String: Bool] = ["like_status": bool]
             let encoder = JSONEncoder()
             do {
@@ -256,7 +264,7 @@ extension Router: TargetType {
         case .uploadFiles, .editProfile:
             return [
                 Header.contentType.rawValue: Header.json.rawValue,
-                Header.contentType.rawValue: Header.multipart.rawValue,
+                //Header.contentType.rawValue: Header.multipart.rawValue,
                 Header.sesacKey.rawValue: APIKey.SesacKey
             ]
         case .withdraw, .viewPost, .viewPost2, .deletePost, .idPost, .viewLikePost, .viewLike2Post, .viewProfile, .viewAnotherProfile://follow, cancleFollow hashTags
