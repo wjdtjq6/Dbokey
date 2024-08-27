@@ -35,7 +35,6 @@ class DetailViewController: UIViewController {
         $0.backgroundColor = UIColor.black.withAlphaComponent(0.3)
         $0.addTarget(self, action: #selector(likeFuncButtonClicked), for: .touchUpInside)
     }
-    //MARK: 좋아요 버튼 기능 되도록 할 것(인섬니아로 바꿔놓으면 보이긴함)
     @objc func likeFuncButtonClicked() {
         if likeFuncButton.isSelected {
             NetworkManager.likePost(postID: data![row].post_id, like_status: false) { result in
@@ -51,7 +50,7 @@ class DetailViewController: UIViewController {
             }
         }
         else {
-            NetworkManager.likePost(postID:  data![row].post_id, like_status: true) { result in
+            NetworkManager.likePost(postID: data![row].post_id, like_status: true) { result in
                 switch result {
                     case .success:
                         DispatchQueue.main.async {

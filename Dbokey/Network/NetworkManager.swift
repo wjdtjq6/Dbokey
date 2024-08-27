@@ -11,13 +11,15 @@ import RxSwift
 
 struct NetworkManager {
     private init() {}
+    
     static func likePost(postID: String, like_status: Bool, completion: @escaping (Result<likeModel, Error>) -> Void) {
         let query = likePostQuery(like_status: like_status)
-        let request = try! Router.likePost(query: query, postID: postID).asURLRequest()
+        let request = try! Router.likePost(postID: postID, query: query).asURLRequest()
         print("Request Body: \(request.httpBody?.base64EncodedString())")
         AF.request(request)
             .validate(statusCode: 200...299)
             .responseDecodable(of: likeModel.self) { response in
+                print("statusCode", response.response?.statusCode)
                 switch response.result {
                 case .success(let success):
                     print("성공 안보이지?")
@@ -28,28 +30,6 @@ struct NetworkManager {
                 }
             }
     }
-
-    /*
-    static func likePost(postID: String, like_status: Bool) ->Observable<likeModel> {
-        let query = likePostQuery(like_status: like_status)
-        let request = try! Router.likePost(query: query, postID: postID).asURLRequest()
-        print("Request Body: \(request.httpBody?.base64EncodedString())")
-        return Observable.create { observer in
-            AF.request(request)
-                .validate(statusCode: 200...299)
-                .responseDecodable(of: likeModel.self) { response in
-                    switch response.result {
-                    case .success(let success):
-                        observer.onNext(success)
-                        observer.onCompleted()
-                    case .failure(let error):
-                        observer.onError(error)
-                    }
-                }
-            return Disposables.create()
-        }.debug("likePost API 통신")
-    }
-     */
     static func viewPost2(next: String, limit: String, productId: String) -> Single<ViewPostModel> {
         var request = try! Router.viewPost2(next: next, limit: limit, productId: productId).asURLRequest()
         // URLComponents를 사용해 queryItems를 추가

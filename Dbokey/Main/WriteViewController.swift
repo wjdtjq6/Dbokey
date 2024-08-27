@@ -8,6 +8,7 @@
 import UIKit
 import Then
 import SnapKit
+import PhotosUI
 
 class WriteViewController: UIViewController {
     private let imageButton = UIButton().then {
@@ -74,6 +75,8 @@ class WriteViewController: UIViewController {
         $0.layer.borderColor = UIColor.systemGray6.cgColor
         $0.layer.cornerRadius = 15
     }
+    private var selectedImageViews: [UIImageView] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         configureHierarchy()
@@ -81,7 +84,13 @@ class WriteViewController: UIViewController {
         configureUI()
     }
     @objc private func imageButtonClicked() {
-        print(#function)
+        var configuration = PHPickerConfiguration()
+        configuration.selectionLimit = 5
+        configuration.filter = .images
+        
+        let picker = PHPickerViewController(configuration: configuration)
+        picker.delegate = self
+        present(picker, animated: true)
     }
     @objc func segmentedControlValueChanged(_ sender: UISegmentedControl) {
         switch sender.selectedSegmentIndex {
@@ -180,14 +189,31 @@ class WriteViewController: UIViewController {
         rightBarButton.tintColor = .black
     }
     @objc func leftBarButtonClicked() {
-        print(#function)
         navigationController?.dismiss(animated: true)
     }
     @objc func rightBarButtonCliecked() {
         print(#function)
+        uploadPostFiles()
+    }
+    func uploadPostFiles() {
+        
     }
 }
-extension WriteViewController: UITextViewDelegate {
+extension WriteViewController: UITextViewDelegate, PHPickerViewControllerDelegate {
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        dismiss(animated: true)
+        selectedImageViews = [imageView1,imageView2, imageView3, imageView4, imageView5]
+        for (index, result) in results.enumerated() {
+            guard index < 5 else { break }
+            result.itemProvider.loadObject(ofClass: UIImage.self) { (object, error) in
+                if let image = object as? UIImage {
+                    DispatchQueue.main.async {
+                        self.selectedImageViews[index].image = image
+                    }
+                }
+            }
+        }
+    }
     func textViewDidBeginEditing(_ textView: UITextView) {
         if textView.textColor == .lightGray {
             textView.text = nil

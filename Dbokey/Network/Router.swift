@@ -29,10 +29,10 @@ enum Router {
     case editComments(query: writeEditCommentsQuery, postID: String, commentID: String)
     case deleteComments(postID: String, commentID: String)
     //좋아요(Like)
-    case likePost(query: likePostQuery, postID: String)
+    case likePost(postID: String, query: likePostQuery)
     case viewLikePost
     //좋아요2(Like2) => 거래완료판별
-    case like2Post(query: likePostQuery, postID: String)
+    case like2Post(postID: String)
     case viewLike2Post
     //profile
     case viewProfile
@@ -42,8 +42,8 @@ enum Router {
 extension Router: TargetType {
     var parameter: Alamofire.Parameters? {
         switch self {
-        case .likePost(let query, _):
-            return ["like_status": query.like_status]
+//        case .likePost(let bool):
+//            return ["like_status": bool]
         default:
             return nil
         }
@@ -88,7 +88,8 @@ extension Router: TargetType {
     }
     var body: Data? {
         switch self {
-        case .likePost(let query, _):
+        case .likePost(let postID, let query)://1
+            //let param: [String: Bool] = ["like_status": bool]
             let encoder = JSONEncoder()
             do {
                 let data = try encoder.encode(query)
@@ -170,16 +171,16 @@ extension Router: TargetType {
                 print(error)
                 return nil
             }
-        case .like2Post(let query,let postID):
-            let encoder = JSONEncoder()
-            do {
-                let data = try encoder.encode(query)
-                print("게시글 좋아요2 true or false 데이터: \(data)")
-                return data
-            } catch {
-                print(error)
-                return nil
-            }
+//        case .like2Post(let query,let postID):
+//            let encoder = JSONEncoder()
+//            do {
+//                let data = try encoder.encode(query)
+//                print("게시글 좋아요2 true or false 데이터: \(data)")
+//                return data
+//            } catch {
+//                print(error)
+//                return nil
+//            }
         case .editProfile(let query):
             let encoder = JSONEncoder()
             do {
@@ -225,11 +226,11 @@ extension Router: TargetType {
             return "/posts/\(postID)/comments/\(commentID)"
         case .deleteComments(let postID, let commentID):
             return "/posts/\(postID)/comments/\(commentID)"
-        case .likePost(_, let postID):
+        case .likePost(let postID, _):
             return "/posts/\(postID)/like"
         case .viewLikePost:
             return "posts/likes/me"
-        case .like2Post(_, let postID):
+        case .like2Post(let postID):
             return "posts/\(postID)/like-2"
         case .viewLike2Post:
             return "posts/likes-2/me"
