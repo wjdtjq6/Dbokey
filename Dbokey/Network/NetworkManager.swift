@@ -12,18 +12,23 @@ import RxSwift
 struct NetworkManager {
     private init() {}
     static func uploadFiles(images: [Data?], completion: @escaping (Result<uploadFilesModel, Error>) -> Void) {
+        let url = APIKey.BaseURL + "v1/posts/files"
+        
+        let token = UserDefaultsManager.shared.token
+        
         let header:HTTPHeaders = [
             Header.sesacKey.rawValue: APIKey.SesacKey,
-            Header.authorization.rawValue: UserDefaultsManager.shared.token,
+            Header.authorization.rawValue: token,
             Header.contentType.rawValue: Header.multipart.rawValue
         ]
+        
         AF.upload(multipartFormData: { multipartFormData in
             for (index, imageData) in images.enumerated() {
                 if let data = imageData {
                     multipartFormData.append(data, withName: "files", fileName: "image\(index + 1).jpeg", mimeType: "image/jpeg")
                 }
             }
-        }, to: try! Router.uploadFiles(query: uploadFilesQuery(files: Data())).asURLRequest().url!, headers: header)
+        }, to: url, headers: header)
         .validate(statusCode: 200...299)
         .responseDecodable(of: uploadFilesModel.self) { response in
             switch response.result {
