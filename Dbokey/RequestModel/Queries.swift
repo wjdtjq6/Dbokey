@@ -26,14 +26,14 @@ struct uploadFilesQuery: Encodable {
     let files: Data
 }
 struct writeEditPostQuery: Encodable {
-    let title: String
-    let content: String
-    let content1: String
-    let content2: String
-    let content3: String
-    let content4: String
-    let product_id: String
-    let files: [String]
+    let title: String//제목
+    let content: String//내용
+    let content1: String//브랜드명
+    let content2: String//장소
+    let content3: String//중고용품or새상품
+    let price: Int//가격
+    let product_id: String//카테고리
+    let files: [String]//이미지
 }
 //댓글(코멘트)
 struct writeEditCommentsQuery: Encodable {

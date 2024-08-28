@@ -21,22 +21,23 @@ struct ViewPostModel: Decodable {
 }
 struct PostData: Decodable {
     let post_id: String
-    let product_id: String?
-    let title: String?
-    let content: String?
-    let content1: String?
-    let content2: String?
-    let content3: String?
-    let content4: String?
+    let product_id: String
+    let title: String//용품명
+    let content: String//게시글 내용
+    let content1: String//브랜드명
+    let content2: String//장소
+    let content3: String//새상품or중고용품
+    let price: Int
+    //let content4: String?
     //let content5: String?
     let createdAt: String
     let creator: Creator
     let files: [String?]
-    var likes: [String?]
-    var likes2: [String?]
-    //let buyers: [String?]
+    var likes: [String?]//좋아요
+    var likes2: [String?]//거래완료
+    let buyers: [String?]
     //let hashTages: [String?]
-    let comments: [Comments?]
+    let comments: [Comments?]//댓글
 }
 struct Creator: Decodable {
     let user_id: String

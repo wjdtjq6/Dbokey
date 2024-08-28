@@ -17,8 +17,13 @@ class DetailViewController: UIViewController {
            let layout = DetailViewController.layout()
            let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
            collectionView.decelerationRate = .fast // 스크롤 감속 속도를 빠르게 설정
+           collectionView.isPagingEnabled = true//bottom에 paging
            return collectionView
        }()
+    let pageControl = UIPageControl().then {
+        $0.pageIndicatorTintColor = .lightGray
+        $0.currentPageIndicatorTintColor = .white
+    }
     static func layout() -> UICollectionViewFlowLayout {
         let layout = UICollectionViewFlowLayout()
         let width = UIScreen.main.bounds.width
@@ -128,6 +133,7 @@ class DetailViewController: UIViewController {
     }
     func configureHierarchy() {
         view.addSubview(collectionView)
+        view.addSubview(pageControl) // UIPageControl 추가
         collectionView.register(DetailCollectionViewCell.self, forCellWithReuseIdentifier: DetailCollectionViewCell.identifier)
         collectionView.delegate = self
         collectionView.dataSource = self
@@ -159,6 +165,10 @@ class DetailViewController: UIViewController {
             make.top.equalTo(view)
             make.horizontalEdges.equalTo(view)
             make.height.equalTo(300)
+        }
+        pageControl.snp.makeConstraints { make in
+            make.centerX.equalTo(view)
+            make.bottom.equalTo(collectionView.snp.bottom)
         }
         likeFuncButton.snp.makeConstraints { make in
             make.bottom.equalTo(collectionView.snp.bottom).inset(20)
@@ -234,18 +244,22 @@ class DetailViewController: UIViewController {
     }
     func configureUI() {
         view.backgroundColor = .white
+        
+        pageControl.numberOfPages = data?[row].files.count ?? 0
+        pageControl.currentPage = 0
+
         likeFuncButton.isSelected =  data![row].likes.contains(UserDefaultsManager.shared.user_id)
         
         nickLabel.text =  data![row].creator.nick
-        locationLabel.text =  data![row].content3//content2ㅇ로 바뀔 예정
+        locationLabel.text =  data![row].content2//content3이었음
         if  data![row].likes2.isEmpty {
             soldoutLabel.text = ""
         } else {
             soldoutLabel.text = "거래완료"
         }
-        newOrusedLabel.text =  data![row].content4//conten3으로 바뀔 예정
+        newOrusedLabel.text =  data![row].content3//conten4였음
         
-        brandLabel.text = "["+( data![row].content1)!+"] "
+        brandLabel.text = "["+( data![row].content1)+"] "
         titleLabel.text =  data![row].title
         let text = category
         let attributes: [NSAttributedString.Key: Any] = [
@@ -265,9 +279,9 @@ class DetailViewController: UIViewController {
         let hours = timeInterval / 3600
         let hoursAgo = Int(hours)
         createdLabel.text = hoursAgo >= 24 ? "• \(hoursAgo/24)일 전" : "• \(hoursAgo%24)시간 전"
-        priceLabel.text = (Int(( data![row].content2)!)?.formatted())! + "원"
+        priceLabel.text = data![row].price.formatted() + "원"//(Int(( data![row].price))?.formatted())! + "원"//.content2였음
         contentLabel.text =  data![row].content
-        commentLabel.text = "댓글\( data![row].comments.count ?? 0)"
+        commentLabel.text = "댓글\( data![row].comments.count)"
         tableView.rowHeight = 30
     }
 }
@@ -319,5 +333,10 @@ extension DetailViewController: UICollectionViewDelegate, UICollectionViewDataSo
         
         offset = CGPoint(x: roundedIndex*cellWidthIncludingSpacing, y: 0)
         targetContentOffset.pointee = offset
+    }
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        let pageWidth = collectionView.frame.size.width
+        let currentPage = Int(scrollView.contentOffset.x / pageWidth)
+        pageControl.currentPage = currentPage
     }
 }

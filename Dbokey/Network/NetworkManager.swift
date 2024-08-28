@@ -25,27 +25,44 @@ struct NetworkManager {
         AF.upload(multipartFormData: { multipartFormData in
             for (index, imageData) in images.enumerated() {
                 if let data = imageData {
-                    multipartFormData.append(data, withName: "files", fileName: "image\(index + 1).jpeg", mimeType: "image/jpeg")
+                    multipartFormData.append(data, withName: "files", fileName: "image\(index + 1).jpg", mimeType: "image/jpg")
                 }
             }
         }, to: url, headers: header)
         .validate(statusCode: 200...299)
         .responseDecodable(of: uploadFilesModel.self) { response in
-            switch response.result {
-            case .success(let value):
-                dump(value.files)
-                self.uploadPostContents()
-                completion(.success(value))
-                
-            case .failure(let error):
-                completion(.failure(error))
-                print(error)
+            if response.response?.statusCode == 400 {
+                // 400 에러일 때, completion을 통해 에러 전달
+                completion(.failure(NSError(domain: "NetworkError", code: 400, userInfo: [NSLocalizedDescriptionKey: "요청이 잘못되었습니다. 다시 시도해 주세요."])))
+            } else {
+                switch response.result {
+                case .success(let value):
+                    completion(.success(value))
+                    
+                case .failure(let error):
+                    completion(.failure(error))
+                }
             }
         }
-    }
-    static func uploadPostContents() {
+    }//TODO: here
+    static func uploadPostContents(title: String, content: String, content1: String, content2: String, content3: String, price: Int, product_id: String, files: [String], completion: @escaping (Result<PostData, Error>) -> Void) {//writeEditPostQuery
         print(#function)
-        
+        let query = writeEditPostQuery(title: title, content: content, content1: content1, content2: content2, content3: content3, price: price, product_id: product_id, files: files)
+        var request = try! Router.writePost(query: query).asURLRequest()
+        print("Request Body: \(request.httpBody?.base64EncodedString())")
+            AF.request(request)
+                .validate(statusCode: 200...299)
+                .responseDecodable(of: PostData.self) { response in
+                    print("statusCode", response.response?.statusCode)
+                    switch response.result {
+                    case .success(let success):
+                        completion(.success(success))
+                        print(success,"성공이다 집가자")
+                    case .failure(let error):
+                        completion(.failure(error))
+                        print(error,"실패다 집 못간다")
+                    }
+                }   
     }
     static func likePost(postID: String, like_status: Bool, completion: @escaping (Result<likeModel, Error>) -> Void) {
         let query = likePostQuery(like_status: like_status)

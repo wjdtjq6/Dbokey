@@ -53,14 +53,6 @@ class MainViewModel {
         .category2(Category2(productId: "dbokey_market_switch", title: "스위치")),
         .category2(Category2(productId: "dbokey_market_etc", title: "기타"))
     ]
-//    private let categories2 = [
-//        Category2(productId: "dbokey_market_made", title: "기성품 키보드"),
-//        Category2(productId: "dbokey_market_custom", title: "커스텀 키보드"),
-//        Category2(productId: "dbokey_market_keycap", title: "키캡"),
-//        Category2(productId: "dbokey_market_artisan", title: "아티산"),
-//        Category2(productId: "dbokey_market_switch", title: "스위치"),
-//        Category2(productId: "dbokey_market_etc", title: "기타")
-//    ]
 
     struct Input {
         let select: ControlEvent<CategoryItem>

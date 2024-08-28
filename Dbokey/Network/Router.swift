@@ -16,7 +16,7 @@ enum Router {
     case refresh
     case withdraw
     //포스트(게시글)
-    case uploadFiles(query: uploadFilesQuery)
+    case uploadFiles
     case writePost(query: writeEditPostQuery)
     case viewPost(next: String, limit: String, productId: String, productId1: String, productId2: String, productId3: String, productId4: String, productId5: String)//전체
     case viewPost2(next: String, limit: String, productId: String)//나머지
@@ -86,8 +86,29 @@ extension Router: TargetType {
     }
     var body: Data? {
         switch self {
-        case .likePost(_, let query)://1
-            //let param: [String: Bool] = ["like_status": bool]
+            /*
+        case .editPost(let query,let postID):
+            let encoder = JSONEncoder()
+            do {
+                let data = try encoder.encode(query)
+                print("게시글 수정 데이터: \(data)")
+                return data
+            } catch {
+                print(error)
+                return nil
+            }
+             */
+        case .writePost(let query):
+            let encoder = JSONEncoder()
+            do {
+                let data = try encoder.encode(query)
+                print("게시글 업로드 데이터: \(data)")
+                return data
+            } catch {
+                print(error)
+                return nil
+            }
+        case .likePost(_, let query):
             let encoder = JSONEncoder()
             do {
                 let data = try encoder.encode(query)
@@ -122,28 +143,6 @@ extension Router: TargetType {
             do {
                 let data = try encoder.encode(query)
                 print("로그인 데이터: \(data)")
-                return data
-            } catch {
-                print(error)
-                return nil
-            }
-            //        case .uploadFiles(let query):
-            //            multipart라서 어케하지..
-        case .writePost(let query):
-            let encoder = JSONEncoder()
-            do {
-                let data = try encoder.encode(query)
-                print("게시글 작성 데이터: \(data)")
-                return data
-            } catch {
-                print(error)
-                return nil
-            }
-        case .editPost(let query,let postID):
-            let encoder = JSONEncoder()
-            do {
-                let data = try encoder.encode(query)
-                print("게시글 수정 데이터: \(data)")
                 return data
             } catch {
                 print(error)
@@ -208,11 +207,9 @@ extension Router: TargetType {
             return "/posts/files"
         case .writePost ,.viewPost,.viewPost2:
             return "/posts"
-//        case .viewPost(let next, let limit, let productID):
-//            return "/posts?next=\(next)&limit=\(limit)&product_id=\(productID)"
         case .idPost(let postID):
             return "/posts/\(postID)"
-        case .editPost(_, let postID):
+        case .editPost(let postID):
             return "/posts/\(postID)"
         case .deletePost(let postID):
             return "/posts/\(postID)"
@@ -245,20 +242,21 @@ extension Router: TargetType {
                 Header.contentType.rawValue: Header.json.rawValue,
                 Header.sesacKey.rawValue: APIKey.SesacKey
             ]
-        case .refresh, .writePost, .editPost, .editComments,.writeComments, .deleteComments, .likePost ,.like2Post://likePost contentType명세안되어있음
-            return [
-                Header.authorization.rawValue: UserDefaultsManager.shared.token,
-                Header.contentType.rawValue: Header.json.rawValue,
-                Header.sesacKey.rawValue: APIKey.SesacKey
-            ]
+//        case .refresh, .writePost, .editPost, .editComments,.writeComments, .deleteComments, .likePost ,.like2Post://likePost contentType명세안되어있음
+//            return [
+//                Header.authorization.rawValue: UserDefaultsManager.shared.token,
+//                Header.contentType.rawValue: Header.json.rawValue,
+//                Header.sesacKey.rawValue: APIKey.SesacKey
+//            ]
         case .uploadFiles, .editProfile:
             return [
                 Header.contentType.rawValue: Header.multipart.rawValue,
                 Header.sesacKey.rawValue: APIKey.SesacKey
             ]
-        case .withdraw, .viewPost, .viewPost2, .deletePost, .idPost, .viewLikePost, .viewLike2Post, .viewProfile, .viewAnotherProfile://follow, cancleFollow hashTags
+        case .withdraw, .viewPost, .viewPost2, .deletePost, .idPost, .viewLikePost, .viewLike2Post, .viewProfile, .viewAnotherProfile, .refresh, .writePost, .editPost, .editComments,.writeComments, .deleteComments, .likePost ,.like2Post://follow, cancleFollow hashTags
             return [
                 Header.authorization.rawValue: UserDefaultsManager.shared.token,
+                Header.contentType.rawValue: Header.json.rawValue,
                 Header.sesacKey.rawValue: APIKey.SesacKey
             ]
         }

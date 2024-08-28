@@ -64,8 +64,8 @@ class MainViewController: UIViewController {
            // .map({ $0.data })//예는 [PostData]
             .bind(to: bottomCollectionView.rx.items(cellIdentifier: ListCollectionViewCell.id, cellType: ListCollectionViewCell.self)) { (row, element, cell) in
                 cell.titleLabel.text = self.postDetailData[row].title
-                cell.location.text = self.postDetailData[row].content3
-                cell.price.text = Int(self.postDetailData[row].content2!)?.formatted()//(Int(element.content2!)?.formatted())! + "원"
+                cell.location.text = self.postDetailData[row].content2
+                cell.price.text = self.postDetailData[row].price.formatted() + "원"//Int(self.postDetailData[row].content2)?.formatted()//(Int(element.content2!)?.formatted())! + "원"
                 
                 if let urlString = self.postDetailData[row].files.first, let url = URL(string: APIKey.BaseURL+"v1/"+urlString!) {//element.files.first, let url = URL(string: APIKey.BaseURL+"v1/" + urlString!) {
                     let modifier = AnyModifier { request in
