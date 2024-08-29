@@ -45,13 +45,13 @@ class MainViewModel {
     //TopCollectioView Data
     
     private let categories: [CategoryItem] = [
-        .category(Category(productId: "dbokey_market_made", productId1: "dbokey_market_custom",productId2: "dbokey_market_keycap", productId3: "dbokey_market_artisan",productId4: "dbokey_market_switch",productId5: "dbokey_market_etc",title: "전체")),
-        .category2(Category2(productId: "dbokey_market_made", title: "기성품 키보드")),
-        .category2(Category2(productId: "dbokey_market_custom", title: "커스텀 키보드")),
-        .category2(Category2(productId: "dbokey_market_keycap", title: "키캡")),
-        .category2(Category2(productId: "dbokey_market_artisan", title: "아티산")),
-        .category2(Category2(productId: "dbokey_market_switch", title: "스위치")),
-        .category2(Category2(productId: "dbokey_market_etc", title: "기타"))
+        .category(Category(productId: "dbokeyt_made", productId1: "dbokey_custom",productId2: "dbokey_keycap", productId3: "dbokey_artisan",productId4: "dbokey_switch",productId5: "dbokey_etc",title: "전체")),
+        .category2(Category2(productId: "dbokeyt_made", title: "기성품 키보드")),
+        .category2(Category2(productId: "dbokey_custom", title: "커스텀 키보드")),
+        .category2(Category2(productId: "dbokey_keycap", title: "키캡")),
+        .category2(Category2(productId: "dbokey_artisan", title: "아티산")),
+        .category2(Category2(productId: "dbokey_switch", title: "스위치")),
+        .category2(Category2(productId: "dbokey_etc", title: "기타"))
     ]
 
     struct Input {

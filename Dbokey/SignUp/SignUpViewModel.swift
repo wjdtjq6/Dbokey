@@ -39,27 +39,7 @@ class SignUpViewModel {
                 .map { $0.message }
             })
             .debug("체크2")
-          
 
-//            .flatMap { value in
-//                NetworkManager.emailCheck(email: value!).catch { error in
-//                    print(error.localizedDescription)
-//                    return Single.just(emailCheckModel(message: ""))
-//                }
-//            }
-//            .debug("체크2")
-//            .subscribe(with: self) { owner, emailCheckModel in
-//                dump(emailCheckModel.message)
-//                print("이메일중복확인 결과")
-//                emailCheckMeassage.onNext(emailCheckModel.message)
-//            } onError: { owner, error in
-//                print(error)
-//            } onCompleted: { owner in
-//                print("completed")
-//            } onDisposed: { owner in
-//                print("disposed")
-//            }
-//            .disposed(by: disposeBag)
         return Output(validation: validationEmail, validationTap: input.validationTap, nextTap: input.nextTap, emailCheckResult: emailCheckResult)
     }
 }

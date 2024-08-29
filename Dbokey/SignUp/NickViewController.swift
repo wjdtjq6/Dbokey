@@ -53,7 +53,6 @@ class NickViewController: UIViewController {
             .disposed(by: disposeBag)
         output.tap//nextButton.rx.tap//input,output
             .bind(with: self) { owner, value in
-                UserDefaultsManager.shared.nick = owner.nicknameTextField.text!
                 owner.navigationController?.pushViewController(PhoneNumViewController(), animated: true)
             }
             .disposed(by: disposeBag)

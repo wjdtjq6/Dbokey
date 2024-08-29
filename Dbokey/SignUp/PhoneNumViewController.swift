@@ -33,16 +33,10 @@ class PhoneNumViewController: UIViewController {
         let input = PhoneNumViewModel.Input(text: phoneTextField.rx.text, tap: nextButton.rx.tap)
         let output = viewModel.transform(input: input)
         
-        //1.
-        //let validInt = BehaviorSubject(value: "010")
-        //validInt
         output.validInt
             .bind(to: phoneTextField.rx.text)
             .disposed(by: disposeBag)
-        //2.
-       /*let validation = phoneTextField.rx.text.orEmpty//input
-            .map { $0.count >= 10 }*/
-        //3.
+
         output.validation
             .bind(with: self, onNext: { owner, value in
                 owner.nextButton.isEnabled = value
@@ -51,10 +45,9 @@ class PhoneNumViewController: UIViewController {
                 
             })
             .disposed(by: disposeBag)
-        //4.
-        output.tap//nextButton.rx.tap//input,output
+
+        output.tap
             .bind(with: self) { owner, _ in
-                UserDefaultsManager.shared.phoneNum = owner.phoneTextField.text!
                 owner.navigationController?.pushViewController(BirthdayViewController(), animated: true)
             }
             .disposed(by: disposeBag)

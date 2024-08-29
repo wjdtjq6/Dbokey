@@ -121,7 +121,6 @@ class BirthdayViewController: UIViewController {
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyyMMdd"
                     let pickedDate = dateFormatter.string(from: self.birthDayPicker.date)
-                    UserDefaultsManager.shared.birthDay = pickedDate
                     NetworkManager.createJoin(email: UserDefaultsManager.shared.email, passwrod: UserDefaultsManager.shared.password, nick: UserDefaultsManager.shared.nick, phoneNum: UserDefaultsManager.shared.phoneNum, birthDay: UserDefaultsManager.shared.birthDay) { success in
                         if success {
                             self.navigationController?.popToRootViewController(animated: true)

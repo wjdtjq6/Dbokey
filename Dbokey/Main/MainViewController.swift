@@ -54,9 +54,17 @@ class MainViewController: UIViewController {
         
         // BottomCollectionView
         output.list
-            .subscribe(onNext: { [weak self] data in
-                self?.postDetailData = data//데이터 전달하네 아래 애들이 핋요할까?
-                self?.bottomCollectionView.reloadData()
+            .subscribe(with: self, onNext: { owner, data in
+                owner.postDetailData = data
+                owner.navigationItem.title = String(data.count)//MARK: here
+                if data.isEmpty {
+                    owner.noResultLabel.isHidden = false
+                    owner.bottomCollectionView.isHidden = true
+                } else {
+                    owner.noResultLabel.isHidden = true
+                    owner.bottomCollectionView.isHidden = false
+                    owner.bottomCollectionView.reloadData()
+                }
             })
             .disposed(by: disposeBag)
         
@@ -136,6 +144,9 @@ class MainViewController: UIViewController {
             make.top.equalTo(topCollectionView.snp.bottom)
             make.horizontalEdges.equalTo(view.safeAreaLayoutGuide)
             make.bottom.equalTo(view.safeAreaLayoutGuide)
+        }
+        noResultLabel.snp.makeConstraints { make in
+            make.center.equalToSuperview()
         }
     }
     func configureUI() {

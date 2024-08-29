@@ -40,8 +40,7 @@ final class LoginViewController: UIViewController {
             .bind(onNext: { _ in
                 let email = output.emailRelay.value//.value
                 let pw = output.passwordRelay.value
-                print(email,"이메일")
-                print(pw,"비번")
+
                 NetworkManager.createLogin(email: email, password: pw) { success in
                     success ? self.showAlert(message: self.messages[0]) : self.showAlert(message: self.messages[1])
                     

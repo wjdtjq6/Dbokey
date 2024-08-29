@@ -51,7 +51,6 @@ class SignUpViewController: UIViewController {
 
         output.nextTap//nextButton.rx.tap//input,output
             .bind(with: self) { owner, _ in
-                UserDefaultsManager.shared.email = owner.emailTextField.text!
                 owner.navigationController?.pushViewController(PasswordViewController(), animated: true)
             }
             .disposed(by: disposeBag)

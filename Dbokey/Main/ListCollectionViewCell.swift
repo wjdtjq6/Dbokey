@@ -14,13 +14,15 @@ class ListCollectionViewCell: UICollectionViewCell {
     static let id = "ListCollectionViewCell"
     let disposeBag = DisposeBag()
     let imageView = UIImageView().then {
-        $0.backgroundColor = .red
         $0.clipsToBounds = true
         $0.layer.cornerRadius = 20
         $0.contentMode = .scaleToFill
+        //TODO: NVActivityIndicatorView 적용 예정
     }
     let titleLabel = UILabel().then {
         $0.font = .systemFont(ofSize: 15)
+        $0.lineBreakMode = .byTruncatingTail // 텍스트가 길어지면 ...으로 표시
+        $0.numberOfLines = 1 // 한 줄로 설정
     }
     let location = UILabel().then {
         $0.textColor = .gray
@@ -66,6 +68,7 @@ class ListCollectionViewCell: UICollectionViewCell {
         titleLabel.snp.makeConstraints { make in
             make.top.equalTo(imageView.snp.bottom).offset(4)
             make.leading.equalTo(contentView.safeAreaLayoutGuide).offset(4)
+            make.trailing.equalTo(contentView.safeAreaLayoutGuide).inset(4)
         }
         location.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom).offset(4)

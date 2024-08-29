@@ -11,6 +11,22 @@ import RxSwift
 
 struct NetworkManager {
     private init() {}
+    static func withdraw() {
+        do {
+            let request = try Router.withdraw.asURLRequest()
+            AF.request(request).responseDecodable(of: SignModel.self) { response in
+                print(response.response?.statusCode)
+                switch response.result {
+                case .success(let success):
+                    print(success)
+                case .failure(let error):
+                    print(error)
+                }
+            }
+        } catch {
+            print("에러",error)
+        }
+    }
     static func uploadFiles(images: [Data?], completion: @escaping (Result<uploadFilesModel, Error>) -> Void) {
         let url = APIKey.BaseURL + "v1/posts/files"
         
@@ -44,8 +60,8 @@ struct NetworkManager {
                 }
             }
         }
-    }//TODO: here
-    static func uploadPostContents(title: String, content: String, content1: String, content2: String, content3: String, price: Int, product_id: String, files: [String], completion: @escaping (Result<PostData, Error>) -> Void) {//writeEditPostQuery
+    }
+    static func uploadPostContents(title: String, content: String, content1: String, content2: String, content3: String, price: Int, product_id: String, files: [String], completion: @escaping (Result<PostData, Error>) -> Void) {
         print(#function)
         let query = writeEditPostQuery(title: title, content: content, content1: content1, content2: content2, content3: content3, price: price, product_id: product_id, files: files)
         var request = try! Router.writePost(query: query).asURLRequest()
@@ -57,10 +73,8 @@ struct NetworkManager {
                     switch response.result {
                     case .success(let success):
                         completion(.success(success))
-                        print(success,"성공이다 집가자")
                     case .failure(let error):
                         completion(.failure(error))
-                        print(error,"실패다 집 못간다")
                     }
                 }   
     }
@@ -143,7 +157,6 @@ struct NetworkManager {
             return Disposables.create()
         }.debug("iTunes API 통신")
     }
-    //TODO: RxSwift로 변경
     static func createJoin(email: String, passwrod: String, nick: String, phoneNum: String, birthDay: String, completion: @escaping(Bool)->() ) {
         do {
             let query = JoinQuery(email: email, password: passwrod, nick: nick, phoneNum: phoneNum, birthDay: birthDay)
@@ -163,7 +176,6 @@ struct NetworkManager {
             completion(false)
         }
     }
-    //TODO: RxSwift로 변경
     static func createLogin(email: String, password: String, completion: @escaping(Bool)->() ) {
         do {
             let query = LoginQuery(email: email, password: password)
@@ -175,7 +187,7 @@ struct NetworkManager {
                     UserDefaultsManager.shared.token = success.access!
                     UserDefaultsManager.shared.refreshToken = success.refresh!
                     UserDefaultsManager.shared.user_id = success.id
-                    //성공적으로 로그인이 되었을 때에만 화면 전환!
+                    UserDefaultsManager.shared.nick = success.nick
                     completion(true)
                 case .failure(let failure):
                     print("Fail",failure)

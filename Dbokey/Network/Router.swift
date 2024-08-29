@@ -202,7 +202,7 @@ extension Router: TargetType {
         case .refresh:
             return "/auth/refresh"
         case .withdraw:
-            return "/v1/users/withdraw"
+            return "/users/withdraw"
         case .uploadFiles:
             return "/posts/files"
         case .writePost ,.viewPost,.viewPost2:
@@ -242,12 +242,6 @@ extension Router: TargetType {
                 Header.contentType.rawValue: Header.json.rawValue,
                 Header.sesacKey.rawValue: APIKey.SesacKey
             ]
-//        case .refresh, .writePost, .editPost, .editComments,.writeComments, .deleteComments, .likePost ,.like2Post://likePost contentType명세안되어있음
-//            return [
-//                Header.authorization.rawValue: UserDefaultsManager.shared.token,
-//                Header.contentType.rawValue: Header.json.rawValue,
-//                Header.sesacKey.rawValue: APIKey.SesacKey
-//            ]
         case .uploadFiles, .editProfile:
             return [
                 Header.contentType.rawValue: Header.multipart.rawValue,

@@ -13,6 +13,8 @@ class DetailViewController: UIViewController {
     var data: [PostData]?
     var row = 0
     var category = ""
+    let scrollView = UIScrollView()
+    let contentView = UIView()
     let collectionView: UICollectionView = {
            let layout = DetailViewController.layout()
            let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -47,7 +49,6 @@ class DetailViewController: UIViewController {
                     case .success:
                         DispatchQueue.main.async {
                             self.likeFuncButton.isSelected.toggle()
-                            print("어디한번 해보시지")
                         }
                     case .failure(let error):
                         print("Error updating like status: \(error)")
@@ -60,8 +61,6 @@ class DetailViewController: UIViewController {
                     case .success:
                         DispatchQueue.main.async {
                             self.likeFuncButton.isSelected.toggle()
-                            print("어디한번 해보시지")
-
                         }
                     case .failure(let error):
                         print("Error updating like status: \(error)")
@@ -116,6 +115,8 @@ class DetailViewController: UIViewController {
     }
     let contentLabel = UILabel().then {
         $0.font = .systemFont(ofSize: 16)
+        $0.numberOfLines = 0
+        $0.lineBreakMode = .byTruncatingTail // 잘린 부분을 "..."으로 표시
     }
     let separator2 = UIView().then {
         $0.backgroundColor = .gray
@@ -132,65 +133,78 @@ class DetailViewController: UIViewController {
         configureUI()
     }
     func configureHierarchy() {
-        view.addSubview(collectionView)
-        view.addSubview(pageControl) // UIPageControl 추가
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        //view.addSubview(collectionView)
+        //view.addSubview(pageControl) // UIPageControl 추가
         collectionView.register(DetailCollectionViewCell.self, forCellWithReuseIdentifier: DetailCollectionViewCell.identifier)
         collectionView.delegate = self
         collectionView.dataSource = self
-        view.addSubview(likeFuncButton)
-        view.addSubview(nickLabel)
-        view.addSubview(locationLabel)
-        view.addSubview(soldoutLabel)
-        view.addSubview(uiView)
-        view.addSubview(newOrusedLabel)
-        view.addSubview(vSeparator)
-        view.addSubview(separator)
+        //view.addSubview(likeFuncButton)
+//        view.addSubview(nickLabel)
+        //view.addSubview(locationLabel)
+        //view.addSubview(soldoutLabel)
+        //view.addSubview(uiView)
+        //view.addSubview(newOrusedLabel)
+        //view.addSubview(vSeparator)
+        //view.addSubview(separator)
         
-        view.addSubview(brandLabel)
-        view.addSubview(titleLabel)
-        view.addSubview(categoryLabel)
-        view.addSubview(createdLabel)
-        view.addSubview(priceLabel)
-        view.addSubview(contentLabel)
+        //view.addSubview(brandLabel)
+        //view.addSubview(titleLabel)
+        //view.addSubview(categoryLabel)
+        //view.addSubview(createdLabel)
+        //view.addSubview(priceLabel)
+        //view.addSubview(contentLabel)
         
-        view.addSubview(separator2)
-        view.addSubview(commentLabel)
-        view.addSubview(tableView)
+        //view.addSubview(separator2)
+        //view.addSubview(commentLabel)
+        //view.addSubview(tableView)
+        
+        [collectionView, pageControl, likeFuncButton, nickLabel, locationLabel, soldoutLabel, uiView, newOrusedLabel, vSeparator, separator, brandLabel, titleLabel, categoryLabel, createdLabel, priceLabel, contentLabel, separator2, commentLabel, tableView].forEach { contentView.addSubview($0) }
+        
+        
         tableView.register(CommentTableViewCell.self, forCellReuseIdentifier: CommentTableViewCell.identifier)
         tableView.delegate = self
         tableView.dataSource = self
     }
     func configureLayout() {
+        scrollView.snp.makeConstraints { make in
+            make.edges.equalTo(view.safeAreaLayoutGuide)
+        }
+        contentView.snp.makeConstraints { make in
+            make.edges.equalTo(scrollView.contentLayoutGuide)
+            make.width.equalTo(scrollView.frameLayoutGuide) // Scroll 방향을 수직으로 설정
+        }
         collectionView.snp.makeConstraints { make in
-            make.top.equalTo(view)
-            make.horizontalEdges.equalTo(view)
+            make.top.equalTo(contentView)
+            make.horizontalEdges.equalTo(contentView)
             make.height.equalTo(300)
         }
         pageControl.snp.makeConstraints { make in
-            make.centerX.equalTo(view)
+            make.centerX.equalTo(contentView)
             make.bottom.equalTo(collectionView.snp.bottom)
         }
         likeFuncButton.snp.makeConstraints { make in
             make.bottom.equalTo(collectionView.snp.bottom).inset(20)
-            make.trailing.equalTo(view).inset(20)
+            make.trailing.equalTo(contentView).inset(20)
         }
         nickLabel.snp.makeConstraints { make in
             make.top.equalTo(collectionView.snp.bottom).offset(20)
-            make.leading.equalTo(view).offset(20)
+            make.leading.equalTo(contentView).offset(20)
         }
         locationLabel.snp.makeConstraints { make in
             make.top.equalTo(nickLabel.snp.bottom).offset(10)
-            make.leading.equalTo(view).offset(20)
+            make.leading.equalTo(contentView).offset(20)
         }
         soldoutLabel.snp.makeConstraints { make in
             make.top.equalTo(collectionView.snp.bottom).offset(20)
-            make.trailing.equalTo(view).inset(110)
+            make.trailing.equalTo(contentView).inset(110)
             make.bottom.equalTo(locationLabel.snp.bottom)
             make.width.equalTo(80)
         }
         uiView.snp.makeConstraints { make in
             make.top.equalTo(collectionView.snp.bottom).offset(20)
-            make.trailing.equalTo(view).inset(20)
+            make.trailing.equalTo(contentView).inset(20)
             make.bottom.equalTo(locationLabel.snp.bottom)
             make.width.equalTo(80)
         }
@@ -199,13 +213,13 @@ class DetailViewController: UIViewController {
         }
         separator.snp.makeConstraints { make in
             make.top.equalTo(locationLabel.snp.bottom).offset(20)
-            make.leading.equalTo(view).offset(20)
+            make.leading.equalTo(contentView).offset(20)
             make.width.equalTo(UIScreen.main.bounds.width/2-20)
             make.height.equalTo(1)
         }
         brandLabel.snp.makeConstraints { make in
             make.top.equalTo(separator.snp.bottom).offset(20)
-            make.leading.equalTo(view).offset(20)
+            make.leading.equalTo(contentView).offset(20)
         }
         titleLabel.snp.makeConstraints { make in
             make.top.equalTo(separator.snp.bottom).offset(20)
@@ -213,7 +227,7 @@ class DetailViewController: UIViewController {
         }
         categoryLabel.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom).offset(10)
-            make.leading.equalTo(view).offset(20)
+            make.leading.equalTo(contentView).offset(20)
         }
         createdLabel.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom).offset(10)
@@ -221,27 +235,30 @@ class DetailViewController: UIViewController {
         }
         priceLabel.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom).offset(10)
-            make.trailing.equalTo(view).inset(20)
+            make.trailing.equalTo(contentView).inset(20)
         }
         contentLabel.snp.makeConstraints { make in
             make.top.equalTo(createdLabel.snp.bottom).offset(20)
-            make.leading.equalTo(view).offset(20)
+            make.leading.equalTo(contentView).offset(20)
+            make.trailing.equalTo(contentView).inset(20)
         }
         separator2.snp.makeConstraints { make in
             make.top.equalTo(contentLabel.snp.bottom).offset(20)
-            make.horizontalEdges.equalTo(UIScreen.main.bounds.width).inset(20)
+            make.horizontalEdges.equalTo(contentView).inset(20)
             make.height.equalTo(1)
         }
         commentLabel.snp.makeConstraints { make in
             make.top.equalTo(separator2.snp.bottom).offset(10)
-            make.leading.equalTo(view).offset(20)
+            make.leading.equalTo(contentView).offset(20)
         }
         tableView.snp.makeConstraints { make in
             make.top.equalTo(commentLabel.snp.bottom).offset(10)
-            make.horizontalEdges.equalTo(view).inset(20)
-            make.bottom.equalTo(view)
+            make.horizontalEdges.equalTo(contentView).inset(20)
+            make.bottom.equalTo(contentView) // 마지막으로 bottom 설정
+            make.height.equalTo(150)//(tableView.contentSize.height) // contentSize를 사용하여 동적 높이 설정
         }
     }
+
     func configureUI() {
         view.backgroundColor = .white
         

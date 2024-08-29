@@ -56,12 +56,12 @@ final class WriteViewController: UIViewController {
             $0.addTarget(self, action: #selector(categoryButtonTapped), for: .touchUpInside)
         }
     private let categories = [
-        ("기성품 키보드", "dbokey_market_made"),
-        ("커스텀 키보드", "dbokey_market_custom"),
-        ("키캡", "dbokey_market_keycap"),
-        ("아티산", "dbokey_market_artisan"),
-        ("스위치", "dbokey_market_switch"),
-        ("기타", "dbokey_market_etc")
+        ("기성품 키보드", "dbokeyt_made"),
+        ("커스텀 키보드", "dbokey_custom"),
+        ("키캡", "dbokey_keycap"),
+        ("아티산", "dbokey_artisan"),
+        ("스위치", "dbokey_switch"),
+        ("기타", "dbokey_etc")
     ]
     private var selectedCategory: String = ""
     
@@ -292,6 +292,7 @@ final class WriteViewController: UIViewController {
                                 case .success(let success):
                                     dump(success.files)
                                     self.navigationController?.dismiss(animated: true)
+                                self.showAlert(title: "업로드 성공", message: "게시글 업로드가 완료되었습니다.")
                                 case .failure(let error):
                                     dump(error)
                                     self.showAlert(title: "업로드 실패", message: "네트워크 연결을 확인해주세요")

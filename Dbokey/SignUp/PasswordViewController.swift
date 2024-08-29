@@ -53,7 +53,6 @@ class PasswordViewController: UIViewController {
         //5.
         output.tap//nextButton.rx.tap//input,output
             .bind(with: self) { owner, _ in
-                UserDefaultsManager.shared.password = owner.passwordTextField.text!
                 owner.navigationController?.pushViewController(NickViewController(), animated: true)
             }
             .disposed(by: disposeBag)

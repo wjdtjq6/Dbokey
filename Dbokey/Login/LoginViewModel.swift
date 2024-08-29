@@ -45,7 +45,6 @@ final class LoginViewModel: UIView {
             .bind(to: passwordRelay)
             .disposed(by: disposeBag)
         
-        
         return Output(emailRelay: emailRelay, passwordRelay: passwordRelay, tap: input.tap, validationEmail: validationEmail, validationPW: validationPW)
     }
 }
