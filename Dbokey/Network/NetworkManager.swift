@@ -11,6 +11,67 @@ import RxSwift
 
 struct NetworkManager {
     private init() {}
+    static func deletePost(post_id: String, completion: @escaping(Bool) -> Void) {
+        do {
+            let request = try Router.deletePost(postID: post_id).asURLRequest()
+            AF.request(request).response() { response in
+                switch response.result {
+                case .success(let success):
+                    print(success)
+                    completion(true)
+                case .failure(let error):
+                    print(error)
+                    completion(false)
+                }
+            }
+        } catch {
+            print("에러",error)
+        }
+    }
+    static func editPost(post_id: String, title: String, content: String, content1: String, content2: String, content3: String, price: Int, product_id: String, files: [String], completion: @escaping (Result<PostData, Error>) -> Void) {
+        let query = writeEditPostQuery(title: title, content: content, content1: content1, content2: content2, content3: content3, price: price, product_id: product_id, files: files)
+        var request = try! Router.editPost(query: query, postID: post_id).asURLRequest()
+        print("Request Body: \(request.httpBody?.base64EncodedString())")
+        AF.request(request)
+            .validate(statusCode: 200...299)
+            .responseDecodable(of: PostData.self) { response in
+                print("statusCode", response.response?.statusCode)
+                switch response.result {
+                case .success(let value):
+                    completion(.success(value))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+    }
+    static func usersPost(userID: String, next: String, limit: String) -> Single<ViewPostModel> {
+       return Single.create { observer in
+           do {
+               var request = try Router.usersPost(userID: userID, next: next, limit: limit).asURLRequest()
+
+               if var urlComponents = URLComponents(url: request.url!, resolvingAgainstBaseURL: false) {
+                   urlComponents.queryItems = Router.usersPost(userID: userID, next: next, limit: limit).queryItems
+                   request.url = urlComponents.url
+               }
+
+               print("Complete URL: \(request.url?.absoluteString ?? "Invalid URL")")
+
+               AF.request(request)
+                   .validate(statusCode: 200...299)
+                   .responseDecodable(of: ViewPostModel.self) { response in
+                       switch response.result {
+                       case .success(let value):
+                           observer(.success(value))
+                       case .failure(let error):
+                           observer(.failure(error))
+                       }
+                   }
+           } catch {
+               observer(.failure(error))
+           }
+           return Disposables.create()
+       }
+   }
     static func withdraw() {
         do {
             let request = try Router.withdraw.asURLRequest()
@@ -71,8 +132,8 @@ struct NetworkManager {
                 .responseDecodable(of: PostData.self) { response in
                     print("statusCode", response.response?.statusCode)
                     switch response.result {
-                    case .success(let success):
-                        completion(.success(success))
+                    case .success(let value):
+                        completion(.success(value))
                     case .failure(let error):
                         completion(.failure(error))
                     }

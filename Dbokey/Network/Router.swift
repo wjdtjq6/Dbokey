@@ -17,13 +17,13 @@ enum Router {
     case withdraw
     //포스트(게시글)
     case uploadFiles
+    case editPost(query: writeEditPostQuery, postID: String)
     case writePost(query: writeEditPostQuery)
     case viewPost(next: String, limit: String, productId: String, productId1: String, productId2: String, productId3: String, productId4: String, productId5: String)//전체
     case viewPost2(next: String, limit: String, productId: String)//나머지
     case idPost(postID: String)
-    case editPost(query: writeEditPostQuery, postID: String)
     case deletePost(postID: String)
-    case usersPost(userID: String)
+    case usersPost(userID: String, next: String, limit: String)
     //댓글(코멘트)
     case writeComments(query: writeEditCommentsQuery, postID: String)
     case editComments(query: writeEditCommentsQuery, postID: String, commentID: String)
@@ -63,6 +63,11 @@ extension Router: TargetType {
     }
     var queryItems: [URLQueryItem]? {
         switch self {
+        case .usersPost(_, let next, let limit):
+            return [
+                URLQueryItem(name: "next", value: next),
+                URLQueryItem(name: "limit", value: limit)
+            ]
         case .viewPost(let next, let limit, let productId, let productId1, let productId2, let productId3, let productId4, let productId5):
             return [
                 URLQueryItem(name: "next", value: next),
@@ -86,8 +91,7 @@ extension Router: TargetType {
     }
     var body: Data? {
         switch self {
-            /*
-        case .editPost(let query,let postID):
+        case .editPost(let query,_):
             let encoder = JSONEncoder()
             do {
                 let data = try encoder.encode(query)
@@ -97,7 +101,6 @@ extension Router: TargetType {
                 print(error)
                 return nil
             }
-             */
         case .writePost(let query):
             let encoder = JSONEncoder()
             do {
@@ -148,7 +151,7 @@ extension Router: TargetType {
                 print(error)
                 return nil
             }
-        case .writeComments(let query,let postID):
+        case .writeComments(let query,_):
             let encoder = JSONEncoder()
             do {
                 let data = try encoder.encode(query)
@@ -158,7 +161,7 @@ extension Router: TargetType {
                 print(error)
                 return nil
             }
-        case .editComments(let query, let postID, let commentID):
+        case .editComments(let query, let postID,_):
             let encoder = JSONEncoder()
             do {
                 let data = try encoder.encode(query)
@@ -207,19 +210,13 @@ extension Router: TargetType {
             return "/posts/files"
         case .writePost ,.viewPost,.viewPost2:
             return "/posts"
-        case .idPost(let postID):
+        case .idPost(let postID), .editPost(_,let postID), .deletePost(let postID):
             return "/posts/\(postID)"
-        case .editPost(let postID):
-            return "/posts/\(postID)"
-        case .deletePost(let postID):
-            return "/posts/\(postID)"
-        case .usersPost(let userID):
-            return "/users/\(userID)"
+        case .usersPost(let userID,_,_):
+            return "/posts/users/\(userID)"
         case .writeComments(_, let postID):
             return "/posts/\(postID)/comments"
-        case .editComments(_, let postID, let commentID):
-            return "/posts/\(postID)/comments/\(commentID)"
-        case .deleteComments(let postID, let commentID):
+        case .editComments(_, let postID, let commentID), .deleteComments(let postID, let commentID):
             return "/posts/\(postID)/comments/\(commentID)"
         case .likePost(let postID, _):
             return "/posts/\(postID)/like"
@@ -237,7 +234,7 @@ extension Router: TargetType {
     }
     var header: [String : String] {
         switch self {
-        case .join, .emailCheck, .login, .usersPost:
+        case .join, .emailCheck, .login:
             return [
                 Header.contentType.rawValue: Header.json.rawValue,
                 Header.sesacKey.rawValue: APIKey.SesacKey
@@ -247,7 +244,7 @@ extension Router: TargetType {
                 Header.contentType.rawValue: Header.multipart.rawValue,
                 Header.sesacKey.rawValue: APIKey.SesacKey
             ]
-        case .withdraw, .viewPost, .viewPost2, .deletePost, .idPost, .viewLikePost, .viewLike2Post, .viewProfile, .viewAnotherProfile, .refresh, .writePost, .editPost, .editComments,.writeComments, .deleteComments, .likePost ,.like2Post://follow, cancleFollow hashTags
+        case .usersPost, .withdraw, .viewPost, .viewPost2, .deletePost, .idPost, .viewLikePost, .viewLike2Post, .viewProfile, .viewAnotherProfile, .refresh, .writePost, .editPost, .editComments,.writeComments, .deleteComments, .likePost ,.like2Post://follow, cancleFollow hashTags
             return [
                 Header.authorization.rawValue: UserDefaultsManager.shared.token,
                 Header.contentType.rawValue: Header.json.rawValue,

@@ -32,82 +32,80 @@ class MainViewController: UIViewController {
         bind()
     }
     func bind() {
-        let cellLikeButtonTap = PublishSubject<String>()
-        let select = topCollectionView.rx.modelSelected(CategoryItem.self)
-        
-        let input = MainViewModel.Input(select: select, likeTap: cellLikeButtonTap, selectCell: bottomCollectionView.rx.itemSelected)
-        let output = viewModel.transform(input: input)
-        
+        bindTopCollectionView()
+        bindBottomCollectionView()
+        bindLoadMoreData()
+        handleSelectCell()
+    }
+
+    private func bindTopCollectionView() {
         // TopCollectionView
         output.categories
             .bind(to: topCollectionView.rx.items(cellIdentifier: CategoryCollectionViewCell.id, cellType: CategoryCollectionViewCell.self)) { (row, element, cell) in
                 cell.CategoryLbel.text = element.title
             }
             .disposed(by: disposeBag)
-        
-        // 선택된 카테고리 제목을 사용
+
         output.selectedCategoryTitle
             .subscribe(onNext: { [weak self] title in
                 self?.category = title
             })
             .disposed(by: disposeBag)
-        
-        // BottomCollectionView
+    }
+
+    private func bindBottomCollectionView() {
         output.list
             .subscribe(with: self, onNext: { owner, data in
                 owner.postDetailData = data
-                owner.navigationItem.title = String(data.count)//MARK: here
-                if data.isEmpty {
-                    owner.noResultLabel.isHidden = false
-                    owner.bottomCollectionView.isHidden = true
-                } else {
-                    owner.noResultLabel.isHidden = true
-                    owner.bottomCollectionView.isHidden = false
-                    owner.bottomCollectionView.reloadData()
-                }
+                owner.updateBottomCollectionView(data.isEmpty)
             })
             .disposed(by: disposeBag)
-        
-        output.list
-           // .map({ $0.data })//예는 [PostData]
-            .bind(to: bottomCollectionView.rx.items(cellIdentifier: ListCollectionViewCell.id, cellType: ListCollectionViewCell.self)) { (row, element, cell) in
-                cell.titleLabel.text = self.postDetailData[row].title
-                cell.location.text = self.postDetailData[row].content2
-                cell.price.text = self.postDetailData[row].price.formatted() + "원"//Int(self.postDetailData[row].content2)?.formatted()//(Int(element.content2!)?.formatted())! + "원"
-                
-                if let urlString = self.postDetailData[row].files.first, let url = URL(string: APIKey.BaseURL+"v1/"+urlString!) {//element.files.first, let url = URL(string: APIKey.BaseURL+"v1/" + urlString!) {
-                    let modifier = AnyModifier { request in
-                        var request = request
-                        request.setValue(APIKey.SesacKey, forHTTPHeaderField: "SesacKey")
-                        request.setValue(UserDefaultsManager.shared.token, forHTTPHeaderField: "Authorization")
-                        return request
-                    }
-                    cell.imageView.kf.setImage(with: url, options: [.requestModifier(modifier)])
-                }
-                cell.soldOut.isHidden = self.postDetailData[row].likes2.isEmpty ? true : false//element.likes2.isEmpty ?  true : false
+    }
 
-                cell.likeFuncButton.isSelected = self.postDetailData[row].likes.contains(UserDefaultsManager.shared.user_id)//element.likes.contains(UserDefaultsManager.shared.user_id)
-    //                print(cell.likeFuncButton.isSelected,"셀렉됐냐????")
-    //                print(element.likes.contains(UserDefaultsManager.shared.user_id),"마포대교는 문어졌냐")
-                cell.likeFuncButton.rx.tap
-                    .subscribe(with: self) { owner, _
-                        in
-                        cellLikeButtonTap.onNext(self.postDetailData[row].post_id)//element.post_id)
-                    }
-                    .disposed(by: cell.disposeBag)
+    private func bindLoadMoreData() {
+        bottomCollectionView.rx.contentOffset
+            .throttle(.milliseconds(200), scheduler: MainScheduler.instance)
+            .map { [weak self] offset -> Bool in
+                guard let self = self else { return false }
+                return self.shouldLoadMoreData(offset: offset)
             }
+            .distinctUntilChanged()
+            .filter { $0 }
+            .subscribe(onNext: { [weak self] _ in
+                self?.viewModel.loadMoreData()
+            })
             .disposed(by: disposeBag)
-        //화면 전환
+    }
+
+    private func updateBottomCollectionView(_ isEmpty: Bool) {
+        noResultLabel.isHidden = !isEmpty
+        bottomCollectionView.isHidden = isEmpty
+        if !isEmpty {
+            bottomCollectionView.reloadData()
+        }
+    }
+
+    private func handleSelectCell() {
         output.selectCell
             .bind(with: self) { owner, indexPath in
                 let vc = DetailViewController()
-                vc.data = self.postDetailData
+                vc.mode = .withoutButton
+                vc.data = owner.postDetailData
                 vc.row = indexPath.row
-                vc.category = self.category
+                vc.category = owner.category
                 owner.navigationController?.pushViewController(vc, animated: true)
             }
-            .disposed(by: disposeBag)    }
-    
+            .disposed(by: disposeBag)
+    }
+
+    private func shouldLoadMoreData(offset: CGPoint) -> Bool {
+        let visibleHeight = bottomCollectionView.frame.height
+        let contentHeight = bottomCollectionView.contentSize.height
+        let yOffset = offset.y
+        let threshold = contentHeight - visibleHeight - 100
+        return yOffset > threshold
+    }
+
     static func topLayout() -> UICollectionViewFlowLayout {
         let layout = UICollectionViewFlowLayout()
         layout.itemSize = CGSize(width: 85, height: 50)
@@ -119,7 +117,7 @@ class MainViewController: UIViewController {
     static func bottomLayout() -> UICollectionViewFlowLayout {
         let layout = UICollectionViewFlowLayout()
         let width = UIScreen.main.bounds.width - 15
-        layout.itemSize = CGSize(width: width/2, height: 250)
+        layout.itemSize = CGSize(width: width/2, height: 260)
         layout.scrollDirection = .vertical
         layout.minimumLineSpacing = 5
         layout.minimumInteritemSpacing = 0
@@ -154,30 +152,15 @@ class MainViewController: UIViewController {
         let rightBarButton = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(barButtonCliecked))
         navigationItem.rightBarButtonItem = rightBarButton
         rightBarButton.tintColor = .black
+        navigationItem.backButtonTitle = ""
+
     }
     @objc func barButtonCliecked() {
         print(#function)
         let vc = WriteViewController()
+        vc.mode = .writeMode
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true)
     }
-//    override func viewWillAppear(_ animated: Bool) {
-//      navigationController?.setNavigationBarHidden(true, animated: true)// 뷰 컨트롤러가 나타날 때 숨기기
-//    }
-//    override func viewWillDisappear(_ animated: Bool) {
-//      navigationController?.setNavigationBarHidden(false, animated: true)// 뷰 컨트롤러가 사라질 때 나타내기
-//    }
-}/*
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        if collectionView == topCollectionView {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CategoryCollectionViewCell.id, for: indexPath) as! CategoryCollectionViewCell
-            cell.CategoryLbel.text = categories[indexPath.item]
-            return cell
-        } else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ListCollectionViewCell.id, for: indexPath) as! ListCollectionViewCell
-            return cell
-        }
-    }
 }
-*/

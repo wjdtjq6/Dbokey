@@ -9,7 +9,14 @@ import UIKit
 import Then
 import SnapKit
 import Kingfisher
+
+enum buttonMode {
+    case withButton
+    case withoutButton
+}
 class DetailViewController: UIViewController {
+    var mode: buttonMode = .withoutButton
+
     var data: [PostData]?
     var row = 0
     var category = ""
@@ -131,6 +138,7 @@ class DetailViewController: UIViewController {
         configureHierarchy()
         configureLayout()
         configureUI()
+        setupNavigationBar()
     }
     func configureHierarchy() {
         view.addSubview(scrollView)
@@ -140,28 +148,8 @@ class DetailViewController: UIViewController {
         collectionView.register(DetailCollectionViewCell.self, forCellWithReuseIdentifier: DetailCollectionViewCell.identifier)
         collectionView.delegate = self
         collectionView.dataSource = self
-        //view.addSubview(likeFuncButton)
-//        view.addSubview(nickLabel)
-        //view.addSubview(locationLabel)
-        //view.addSubview(soldoutLabel)
-        //view.addSubview(uiView)
-        //view.addSubview(newOrusedLabel)
-        //view.addSubview(vSeparator)
-        //view.addSubview(separator)
-        
-        //view.addSubview(brandLabel)
-        //view.addSubview(titleLabel)
-        //view.addSubview(categoryLabel)
-        //view.addSubview(createdLabel)
-        //view.addSubview(priceLabel)
-        //view.addSubview(contentLabel)
-        
-        //view.addSubview(separator2)
-        //view.addSubview(commentLabel)
-        //view.addSubview(tableView)
         
         [collectionView, pageControl, likeFuncButton, nickLabel, locationLabel, soldoutLabel, uiView, newOrusedLabel, vSeparator, separator, brandLabel, titleLabel, categoryLabel, createdLabel, priceLabel, contentLabel, separator2, commentLabel, tableView].forEach { contentView.addSubview($0) }
-        
         
         tableView.register(CommentTableViewCell.self, forCellReuseIdentifier: CommentTableViewCell.identifier)
         tableView.delegate = self
@@ -169,10 +157,10 @@ class DetailViewController: UIViewController {
     }
     func configureLayout() {
         scrollView.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide)
+            make.edges.equalTo(view)
         }
         contentView.snp.makeConstraints { make in
-            make.edges.equalTo(scrollView.contentLayoutGuide)
+            make.edges.equalTo(scrollView)
             make.width.equalTo(scrollView.frameLayoutGuide) // Scroll 방향을 수직으로 설정
         }
         collectionView.snp.makeConstraints { make in
@@ -258,9 +246,15 @@ class DetailViewController: UIViewController {
             make.height.equalTo(150)//(tableView.contentSize.height) // contentSize를 사용하여 동적 높이 설정
         }
     }
-
     func configureUI() {
         view.backgroundColor = .white
+        navigationController?.navigationBar.tintColor = .black
+        scrollView.contentInsetAdjustmentBehavior = .never// 스크롤 뷰 자동 조정 방지
+        
+        //메인에서는 수정,삭제 안되고 마이-나의판매내역-셀클릭해서만 보이도록!
+        let rightBarButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: #selector(barButtonCliecked))
+        navigationItem.rightBarButtonItem = rightBarButton
+        rightBarButton.tintColor = .black
         
         pageControl.numberOfPages = data?[row].files.count ?? 0
         pageControl.currentPage = 0
@@ -278,12 +272,30 @@ class DetailViewController: UIViewController {
         
         brandLabel.text = "["+( data![row].content1)+"] "
         titleLabel.text =  data![row].title
-        let text = category
+        
+        var text = ""
+        switch data![row].product_id {
+        case "dbokeyt_made":
+            text = "기성품 키보드"
+        case "dbokey_custom":
+            text = "커스텀 키보드"
+        case "dbokey_keycap":
+            text = "키캡"
+        case "dbokey_switch":
+            text = "스위치"
+        case "dbokey_artisan":
+            text = "아티산"
+        case "dbokey_etc":
+            text = "기타"
+        default:
+            text = ""
+        }
         let attributes: [NSAttributedString.Key: Any] = [
             .underlineStyle: NSUnderlineStyle.single.rawValue,
             .underlineColor: UIColor.darkGray]
         let attributedString = NSAttributedString(string: text, attributes: attributes)
         categoryLabel.attributedText = attributedString
+        
         let dateString =  data![row].createdAt
         let dateFormatter = ISO8601DateFormatter()
         dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds] // 옵션 설정
@@ -301,10 +313,140 @@ class DetailViewController: UIViewController {
         commentLabel.text = "댓글\( data![row].comments.count)"
         tableView.rowHeight = 30
     }
-}
+    private func setupNavigationBar() {
+        switch mode {
+        case .withButton:
+            let rightBarButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: #selector(barButtonCliecked))
+            navigationController?.navigationItem.rightBarButtonItem = rightBarButton
+            rightBarButton.tintColor = .black
+        case .withoutButton:
+            //navigationItem.rightBarButtonItem?.isHidden = true 아래랑 같은 기능
+            navigationItem.rightBarButtonItem = nil
+        }
+    }
+    @objc func barButtonCliecked() {
+        let alertSheetController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+      
+        let editAction = UIAlertAction(title: "게시글 수정", style: .default) { _ in
+            let vc = WriteViewController()
+            vc.mode = .editMode
+            vc.postID = self.data![self.row].post_id
+            // 이미지 데이터 전달
+            for i in 0..<self.data![self.row].files.count {
+                if let firstImageURLString = self.data![self.row].files[i],
+                   let url = URL(string: APIKey.BaseURL + "v1/" + firstImageURLString) {
+                    KingfisherManager.shared.retrieveImage(with: url) { result in
+                        switch result {
+                        case .success(let imageResult):
+                            vc.imageViews[i].image = imageResult.image
+                            vc.removeButtons[i].isHidden = false
+                        case .failure(let error):
+                            print("이미지 로드 실패: \(error)")
+                        }
+                    }
+                }
+            }
+            
+            // 텍스트 데이터 전달
+            vc.brandTextField.text = self.data![self.row].content1
+            vc.titleTextField.text = self.data![self.row].title
+            vc.locationTextField.text = self.data![self.row].content2
+            vc.priceTextField.text = String(self.data![self.row].price)
+            
+            // contentTextView 설정
+            if !self.data![self.row].content.isEmpty {
+                vc.contentTextView.text = self.data![self.row].content
+                vc.contentTextView.textColor = .black
+            } else {
+                vc.contentTextView.text = "게시글 내용을 작성해주세요\n- 구매시기\n- 자세한 설명"
+                vc.contentTextView.textColor = .lightGray
+            }
+            
+            // 카테고리 설정
+            vc.selectedCategory = self.data![self.row].product_id
+            // 카테고리 버튼 텍스트 설정
+            switch self.data![self.row].product_id {
+            case "dbokeyt_made":
+                vc.categoryButton.setTitle("기성품 키보드", for: .normal)
+            case "dbokey_custom":
+                vc.categoryButton.setTitle("커스텀 키보드", for: .normal)
+            case "dbokey_keycap":
+                vc.categoryButton.setTitle("키캡", for: .normal)
+            case "dbokey_switch":
+                vc.categoryButton.setTitle("스위치", for: .normal)
+            case "dbokey_artisan":
+                vc.categoryButton.setTitle("아티산", for: .normal)
+            case "dbokey_etc":
+                vc.categoryButton.setTitle("기타", for: .normal)
+            default:
+                vc.categoryButton.setTitle("", for: .normal)
+            }
+            // 상태(중고/새상품) 설정
+            if self.data![self.row].content3 == "중고용품" {
+                vc.segmentedControl.selectedSegmentIndex = 0
+            } else {
+                vc.segmentedControl.selectedSegmentIndex = 1
+            }
+            
+            let nav = UINavigationController(rootViewController: vc)
+            nav.modalPresentationStyle = .fullScreen
+            self.present(nav, animated: true)
+            var categoryValue = ""
+            switch self.categoryLabel.text {
+            case "기성품 키보드":
+                categoryValue = "dbokeyt_made"
+            case "커스텀 키보드":
+                categoryValue = "dbokey_custom"
+            case "키캡":
+                categoryValue = "dbokey_keycap"
+            case "스위치":
+                categoryValue = "dbokey_switch"
+            case "아티산":
+                categoryValue = "dbokey_artisan"
+            case "기타":
+                categoryValue  = "dbokey_etc"
+            default:
+                categoryValue  = ""
+            }
+        }
+        let deleteAction = UIAlertAction(title: "삭제", style: .destructive) { _ in
+            let alertController = UIAlertController(title: nil, message: "게시글을 삭제하시겠어요?", preferredStyle: .alert)
+            let deleteAction = UIAlertAction(title: "삭제", style: .destructive) { _ in
+                //TODO: 삭제 API
+                NetworkManager.deletePost(post_id: self.data![self.row].post_id) { success in
+                    if success {
+                        let alertConfirmController = UIAlertController(title: nil, message: "게시글이 삭제되었습니다.", preferredStyle: .alert)
+                        let okAction = UIAlertAction(title: "확인", style: .default) { _ in
+                            self.navigationController?.popViewController(animated: true)
+                        }
+                        alertConfirmController.addAction(okAction)
+                        self.present(alertConfirmController, animated: true)
+                    } else {
+                        let alertConfirmController = UIAlertController(title: "삭제 실패", message: "다시 시도해주세요.", preferredStyle: .alert)
+                        let okAction = UIAlertAction(title: "확인", style: .default)
+                        alertConfirmController.addAction(okAction)
+                        self.present(alertConfirmController, animated: true, completion: nil)
+                    }
+                }
+            }
+            let cancelAction = UIAlertAction(title: "취소", style: .cancel, handler: nil)
+            alertController.addAction(cancelAction)
+            alertController.addAction(deleteAction)
+            self.present(alertController, animated: true, completion: nil)
+        }
+        let cancelAction = UIAlertAction(title: "닫기", style: .cancel, handler: nil)
+        
+        alertSheetController.addAction(editAction)
+        alertSheetController.addAction(deleteAction)
+        alertSheetController.addAction(cancelAction)
+
+        present(alertSheetController, animated: true, completion: nil)
+        }
+    }
+
 extension DetailViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        ( data![row].comments.count)
+        data![row].comments.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -317,7 +459,6 @@ extension DetailViewController: UITableViewDelegate, UITableViewDataSource {
         cell.commentLabel.text =  data![row].comments[indexPath.row]?.content
         return cell
     }
-    
     
 }
 extension DetailViewController: UICollectionViewDelegate, UICollectionViewDataSource {

@@ -63,7 +63,7 @@ class ListCollectionViewCell: UICollectionViewCell {
     func configureLayout() {
         imageView.snp.makeConstraints { make in
             make.top.horizontalEdges.equalTo(contentView.safeAreaLayoutGuide)
-            make.bottom.equalTo(contentView.safeAreaLayoutGuide).inset(60)
+            make.bottom.equalTo(contentView.safeAreaLayoutGuide).inset(70)
         }
         titleLabel.snp.makeConstraints { make in
             make.top.equalTo(imageView.snp.bottom).offset(4)

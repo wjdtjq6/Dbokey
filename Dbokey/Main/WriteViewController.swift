@@ -10,7 +10,13 @@ import Then
 import SnapKit
 import PhotosUI
 
-final class WriteViewController: UIViewController {
+enum uploadMode {
+    case writeMode
+    case editMode
+}
+class WriteViewController: UIViewController {
+    var mode: uploadMode = .writeMode
+    var postID = ""
     private let imageButton = UIButton().then {
         $0.setImage(UIImage(systemName: "camera.fill"), for: .normal)
         $0.layer.borderColor = UIColor.lightGray.cgColor
@@ -24,14 +30,14 @@ final class WriteViewController: UIViewController {
            $0.layer.cornerRadius = 5
        }
    }
-   private let imageViews: [UIImageView] = (0..<5).map { _ in
+   var imageViews: [UIImageView] = (0..<5).map { _ in
        UIImageView().then {
            $0.contentMode = .scaleToFill
            $0.layer.masksToBounds = true
            $0.layer.cornerRadius = 5
        }
    }
-   private let removeButtons: [UIButton] = (0..<5).map { _ in
+   let removeButtons: [UIButton] = (0..<5).map { _ in
        UIButton().then {
            $0.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
            $0.tintColor = .white
@@ -41,12 +47,11 @@ final class WriteViewController: UIViewController {
            $0.isUserInteractionEnabled = true
        }
    }
-    
-    private let brandTextField = UITextField().then {
+    var brandTextField = UITextField().then {
         $0.placeholder = "브랜드명"
         $0.borderStyle = .roundedRect
     }
-    private let categoryButton = UIButton().then {
+    var categoryButton = UIButton().then {
             $0.setTitle("카테고리 선택", for: .normal)
             $0.setTitleColor(.black, for: .normal)
             $0.backgroundColor = .systemGray6
@@ -63,18 +68,18 @@ final class WriteViewController: UIViewController {
         ("스위치", "dbokey_switch"),
         ("기타", "dbokey_etc")
     ]
-    private var selectedCategory: String = ""
+    var selectedCategory: String = ""
     
-    private let titleTextField = UITextField().then {
+    var titleTextField = UITextField().then {
         $0.placeholder = "용품명"
         $0.borderStyle = .roundedRect
     }
-    private let priceTextField = UITextField().then {
+    var priceTextField = UITextField().then {
         $0.placeholder = "판매가격"
         $0.borderStyle = .roundedRect
         $0.keyboardType = .numberPad
     }
-    private let segmentedControl = UISegmentedControl(items: ["중고용품", "새상품"]).then {
+    var segmentedControl = UISegmentedControl(items: ["중고용품", "새상품"]).then {
         $0.selectedSegmentIndex = 0  // 기본값으로 첫 번째 항목 선택
         $0.translatesAutoresizingMaskIntoConstraints = false
         $0.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
@@ -82,11 +87,11 @@ final class WriteViewController: UIViewController {
     private let stateLabel = UILabel().then {
         $0.text = "물품상태"
     }
-    private let locationTextField = UITextField().then {
+    var locationTextField = UITextField().then {
         $0.placeholder = "판매 지역(ex. 서울시 구로동)"
         $0.borderStyle = .roundedRect
     }
-    private let contentTextView = UITextView().then {
+    var contentTextView = UITextView().then {
         $0.text = "게시글 내용을 작성해주세요\n- 구매시기\n- 자세한 설명"
         $0.textColor = .lightGray
         $0.textAlignment = .left  // 텍스트 정렬 (상단에 자동 정렬됨)
@@ -114,12 +119,6 @@ final class WriteViewController: UIViewController {
         let cancelAction = UIAlertAction(title: "취소", style: .cancel, handler: nil)
         alertController.addAction(cancelAction)
         
-//        // iPad에서 사용할 때 필요한 설정
-//        if let popoverController = alertController.popoverPresentationController {
-//            popoverController.sourceView = categoryButton
-//            popoverController.sourceRect = categoryButton.bounds
-//        }
-        
         present(alertController, animated: true, completion: nil)
     }
     override func viewDidLoad() {
@@ -128,6 +127,15 @@ final class WriteViewController: UIViewController {
         configureLauyout()
         configureUI()
         setupRemoveButtons()
+        setupTextView()
+    }
+    private func setupTextView() {
+        contentTextView.delegate = self
+        if contentTextView.text == "게시글 내용을 작성해주세요\n- 구매시기\n- 자세한 설명" {
+            contentTextView.textColor = .lightGray
+        } else {
+            contentTextView.textColor = .black
+        }
     }
     @objc private func imageButtonClicked() {
         for i in 0..<5 {
@@ -256,12 +264,6 @@ final class WriteViewController: UIViewController {
     private func uploadPostFiles() {
         let images = imageViews.compactMap { $0.image?.jpegData(compressionQuality: 0.5) }
         
-//        let allConditionsMet = !images.isEmpty &&
-//                                   !brandTextField.text!.isEmpty &&
-//                                   !titleTextField.text!.isEmpty &&
-//                                   contentTextView.textColor != UIColor.lightGray &&
-//                                   !locationTextField.text!.isEmpty
-        
         NetworkManager.uploadFiles(images: images) { result in
             switch result {
             case .success(let success):
@@ -287,20 +289,56 @@ final class WriteViewController: UIViewController {
                     self.showAlert(title: "업로드 실패", message: "판매 지역을 작성해주세요.")
                 }
                 else {
-                    NetworkManager.uploadPostContents(title: self.titleTextField.text!, content: self.contentTextView.text!, content1: self.brandTextField.text!, content2: self.locationTextField.text!, content3: self.content3, price: Int(self.priceTextField.text!) ?? 0, product_id: self.selectedCategory, files: success.files) { result in
+                    if self.mode == .writeMode {
+                        NetworkManager.uploadPostContents(title: self.titleTextField.text!, content: self.contentTextView.text!, content1: self.brandTextField.text!, content2: self.locationTextField.text!, content3: self.content3, price: Int(self.priceTextField.text!) ?? 0, product_id: self.selectedCategory, files: success.files) { result in
+                                switch result {
+                                    case .success(let success):
+                                        dump(success.files)
+                                        self.navigationController?.dismiss(animated: true)
+                                    self.showAlert(title: "업로드 성공", message: "게시글 업로드가 완료되었습니다.")
+                                    case .failure(let error):
+                                        dump(error)
+                                        self.showAlert(title: "업로드 실패", message: "네트워크 연결을 확인해주세요")
+                                }
+                            }
+                    } else {
+                        var categoryValue = ""
+                        switch self.categoryButton.titleLabel?.text {
+                        case "기성품 키보드":
+                            categoryValue = "dbokeyt_made"
+                        case "커스텀 키보드":
+                            categoryValue = "dbokey_custom"
+                        case "키캡":
+                            categoryValue = "dbokey_keycap"
+                        case "스위치":
+                            categoryValue = "dbokey_switch"
+                        case "아티산":
+                            categoryValue = "dbokey_artisan"
+                        case "기타":
+                            categoryValue  = "dbokey_etc"
+                        default:
+                            categoryValue  = ""
+                        }
+                        var selected = ""
+                        if self.segmentedControl.selectedSegmentIndex == 0 {
+                            selected = "중고용품"
+                        } else {
+                            selected = "새상품"
+                        }
+                        NetworkManager.editPost(post_id: self.postID, title: self.titleTextField.text!, content: self.contentTextView.text, content1: self.brandTextField.text!, content2: self.locationTextField.text!, content3: selected, price: Int(self.priceTextField.text!)!, product_id: categoryValue, files: success.files) { result in
                             switch result {
                                 case .success(let success):
                                     dump(success.files)
                                     self.navigationController?.dismiss(animated: true)
-                                self.showAlert(title: "업로드 성공", message: "게시글 업로드가 완료되었습니다.")
+                                self.showAlert(title: "게시글 수정 성공", message: "게시글 수정이 완료되었습니다.")
                                 case .failure(let error):
                                     dump(error)
-                                    self.showAlert(title: "업로드 실패", message: "네트워크 연결을 확인해주세요")
+                                    self.showAlert(title: "게시글 수정 실패", message: "네트워크 연결을 확인해주세요")
                             }
                         }
+                    }
+                    
                 }
-                
-
             case .failure(let error):
                 print(error)
                 DispatchQueue.main.async {

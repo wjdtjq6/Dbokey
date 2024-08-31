@@ -19,7 +19,8 @@ class MyViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         navigationItem.title = "\(UserDefaultsManager.shared.nick)"
-        
+        navigationItem.backButtonTitle = ""
+
         view.addSubview(tableView)
         tableView.delegate = self
         tableView.dataSource = self
@@ -48,14 +49,17 @@ extension UIViewController {
 }
 extension MyViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if indexPath.row == 0 {
-//            let vc = ProfileNicknameSettingViewController()
-//            navigationItem.backButtonTitle = ""
-//            navigationController?.navigationBar.tintColor = .black
-//            navigationController?.pushViewController(vc, animated: true)
-            print("0번 선택")
-        }
-        else if indexPath.row == 4{
+        switch indexPath.row {
+        case 0:
+            print("아무것도")
+        case 1:
+            print("나의 관심 목록 vc예정")
+        case 2:
+            let vc = MySellViewController()
+            navigationController?.pushViewController(vc, animated: true)
+        case 3:
+            print("내 커뮤니티클 vc예정")
+        case 4:
             showAlert(title: "로그아웃", message: "로그아웃 하시겠습니까?", ok: "확인") {
                 if let appDomain = Bundle.main.bundleIdentifier {
                     UserDefaults.standard.removePersistentDomain(forName: appDomain)
@@ -68,8 +72,7 @@ extension MyViewController: UITableViewDelegate, UITableViewDataSource {
                 SceneDelegate?.window?.rootViewController = UINavigationController(rootViewController: navigationController)
                 SceneDelegate?.window?.makeKeyAndVisible()
             }
-        }
-        else if indexPath.row == 5 {
+        case 5:
             showAlert(title: "탈퇴하기", message: "정말 탈퇴 하시겠습니까?", ok: "확인") {
                 NetworkManager.withdraw()
                 if let appDomain = Bundle.main.bundleIdentifier {
@@ -82,7 +85,10 @@ extension MyViewController: UITableViewDelegate, UITableViewDataSource {
                 
                 SceneDelegate?.window?.rootViewController = UINavigationController(rootViewController: navigationController)
                 SceneDelegate?.window?.makeKeyAndVisible()
-            }        }
+            }
+        default:
+            print("아무것도")
+        }
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         6
@@ -121,7 +127,7 @@ extension MyViewController: UITableViewDelegate, UITableViewDataSource {
             cell.textLabel!.text = titles[indexPath.row-1]
             cell.textLabel!.font = .systemFont(ofSize: 14)
         }
-        if !(indexPath.row == 0 || indexPath.row == 5) {
+        if indexPath.row == 0 {
             cell.selectionStyle = .none
         }
         return cell
