@@ -19,7 +19,10 @@ struct ViewPostModel: Decodable {
     var data: [PostData]
     let next_cursor: String
 }
-struct PostData: Decodable {
+struct PostData: Decodable,Equatable {
+    static func == (lhs: PostData, rhs: PostData) -> Bool {
+           return lhs.post_id == rhs.post_id // post_id로 동일성 비교
+       }
     let post_id: String
     let product_id: String
     let title: String//용품명

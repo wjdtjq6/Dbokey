@@ -11,7 +11,6 @@ import RxSwift
 
 struct NetworkManager {
     private init() {}
-    
     static func deletePost(post_id: String, completion: @escaping(Bool) -> Void) {
         do {
             let request = try Router.deletePost(postID: post_id).asURLRequest()

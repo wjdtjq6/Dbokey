@@ -9,6 +9,8 @@ import UIKit
 import Then
 import SnapKit
 import Kingfisher
+import iamport_ios
+import WebKit
 
 enum buttonMode {
     case withButton
@@ -16,7 +18,13 @@ enum buttonMode {
 }
 class DetailViewController: UIViewController {
     var mode: buttonMode = .withoutButton
-
+    
+    lazy var wkWebView: WKWebView = {
+        var view = WKWebView()
+        view.backgroundColor = .white
+        return view
+    }()
+    
     var data: [PostData]?
     var row = 0
     var category = ""
@@ -120,6 +128,10 @@ class DetailViewController: UIViewController {
     let priceLabel = UILabel().then {
         $0.font = .boldSystemFont(ofSize: 17)
     }
+    let buyButton = PointButton(title: "구매하기").then {
+        $0.addTarget(self, action: #selector(buyButtonClicked), for: .touchUpInside)
+        $0.backgroundColor = .black
+    }
     let contentLabel = UILabel().then {
         $0.font = .systemFont(ofSize: 16)
         $0.numberOfLines = 0
@@ -133,6 +145,36 @@ class DetailViewController: UIViewController {
     }
     let tableView = UITableView().then { _ in
     }
+    @objc func buyButtonClicked() {
+        let payment = IamportPayment(
+            pg: PG.html5_inicis.makePgRawName(pgId: "INIpayTest"),
+            merchant_uid: "ios_\(Header.sesacKey)_\(Int(Date().timeIntervalSince1970))",
+            amount: "1").then {//"\(data![row].price)").then {
+                $0.pay_method = PayMethod.card.rawValue
+                $0.name = data![row].title
+                $0.buyer_name = UserDefaultsManager.shared.nick
+                $0.app_scheme = "sesac"
+            }
+        
+        wkWebView.isHidden = false
+
+        Iamport.shared.paymentWebView(
+            webViewMode: wkWebView,
+            userCode: "imp57573124",
+            payment: payment) { [weak self] iamportResponse in
+                print(String(describing: iamportResponse))
+                if ((iamportResponse?.success) != nil) {
+                    self!.showAlert(title: "결제 성공", message: "상품 구매가 완료되었습니다.")
+                } else {
+                    self!.showAlert(title: "결제 실패", message: "결제 중 오류가 발생했습니다. 다시 시도해주세요.")
+                }
+            }
+    }
+    func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default, handler: nil))
+        self.present(alert, animated: true, completion: nil)
+    }
     override func viewDidLoad() {
         super.viewDidLoad()
         configureHierarchy()
@@ -142,6 +184,7 @@ class DetailViewController: UIViewController {
     }
     func configureHierarchy() {
         view.addSubview(scrollView)
+        view.addSubview(wkWebView)
         scrollView.addSubview(contentView)
         //view.addSubview(collectionView)
         //view.addSubview(pageControl) // UIPageControl 추가
@@ -149,13 +192,16 @@ class DetailViewController: UIViewController {
         collectionView.delegate = self
         collectionView.dataSource = self
         
-        [collectionView, pageControl, likeFuncButton, nickLabel, locationLabel, soldoutLabel, uiView, newOrusedLabel, vSeparator, separator, brandLabel, titleLabel, categoryLabel, createdLabel, priceLabel, contentLabel, separator2, commentLabel, tableView].forEach { contentView.addSubview($0) }
+        [collectionView, pageControl, likeFuncButton, nickLabel, locationLabel, soldoutLabel, uiView, newOrusedLabel, vSeparator, separator, brandLabel, titleLabel, categoryLabel, createdLabel, priceLabel, buyButton, contentLabel, separator2, commentLabel, tableView].forEach { contentView.addSubview($0) }
         
         tableView.register(CommentTableViewCell.self, forCellReuseIdentifier: CommentTableViewCell.identifier)
         tableView.delegate = self
         tableView.dataSource = self
     }
     func configureLayout() {
+        wkWebView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
         scrollView.snp.makeConstraints { make in
             make.edges.equalTo(view)
         }
@@ -225,10 +271,14 @@ class DetailViewController: UIViewController {
             make.top.equalTo(titleLabel.snp.bottom).offset(10)
             make.trailing.equalTo(contentView).inset(20)
         }
+        buyButton.snp.makeConstraints { make in
+            make.top.equalTo(priceLabel.snp.bottom).offset(10)
+            make.leading.trailing.equalTo(contentView).inset(20)
+            make.height.equalTo(44)
+        }
         contentLabel.snp.makeConstraints { make in
-            make.top.equalTo(createdLabel.snp.bottom).offset(20)
-            make.leading.equalTo(contentView).offset(20)
-            make.trailing.equalTo(contentView).inset(20)
+            make.top.equalTo(buyButton.snp.bottom).offset(20)
+            make.leading.trailing.equalTo(contentView).inset(20)
         }
         separator2.snp.makeConstraints { make in
             make.top.equalTo(contentLabel.snp.bottom).offset(20)
@@ -248,6 +298,7 @@ class DetailViewController: UIViewController {
     }
     func configureUI() {
         view.backgroundColor = .white
+        wkWebView.isHidden = true
         navigationController?.navigationBar.tintColor = .black
         scrollView.contentInsetAdjustmentBehavior = .never// 스크롤 뷰 자동 조정 방지
         
@@ -319,9 +370,11 @@ class DetailViewController: UIViewController {
             let rightBarButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: #selector(barButtonCliecked))
             navigationController?.navigationItem.rightBarButtonItem = rightBarButton
             rightBarButton.tintColor = .black
+            buyButton.isEnabled = false
         case .withoutButton:
             //navigationItem.rightBarButtonItem?.isHidden = true 아래랑 같은 기능
             navigationItem.rightBarButtonItem = nil
+            buyButton.isEnabled = true
         }
     }
     @objc func barButtonCliecked() {

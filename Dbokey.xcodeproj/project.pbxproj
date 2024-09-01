@@ -51,11 +51,12 @@
 		BF7222EF2C70C4EE004BF726 /* BirthdayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222EE2C70C4EE004BF726 /* BirthdayViewController.swift */; };
 		BF7222F12C70C516004BF726 /* BirthdayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222F02C70C516004BF726 /* BirthdayViewModel.swift */; };
 		BF7222FC2C732877004BF726 /* MainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7222FB2C732877004BF726 /* MainViewModel.swift */; };
-		BF7222FF2C73367A004BF726 /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = BF7222FE2C73367A004BF726 /* Then */; };
 		BF7223012C733908004BF726 /* CategoryCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7223002C733908004BF726 /* CategoryCollectionViewCell.swift */; };
 		BF7223032C736DD3004BF726 /* ListCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7223022C736DD3004BF726 /* ListCollectionViewCell.swift */; };
 		BF7223062C748791004BF726 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = BF7223052C748791004BF726 /* Kingfisher */; };
 		BF76A14A2C8172D800FC6974 /* MySellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF76A1492C8172D800FC6974 /* MySellViewModel.swift */; };
+		BF76A1572C84980900FC6974 /* iamport-ios in Frameworks */ = {isa = PBXBuildFile; productRef = BF76A1562C84980900FC6974 /* iamport-ios */; };
+		BF76A15A2C84981800FC6974 /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = BF76A1592C84981800FC6974 /* Then */; };
 		BFCC3DF42C808BCC0060C729 /* CommunityTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCC3DF32C808BCC0060C729 /* CommunityTableViewCell.swift */; };
 		BFCC3DF62C808D290060C729 /* MyTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCC3DF52C808D290060C729 /* MyTableViewCell.swift */; };
 		BFCC3DF82C80C8D60060C729 /* MySellViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCC3DF72C80C8D60060C729 /* MySellViewController.swift */; };
@@ -137,10 +138,11 @@
 			files = (
 				BF61D0712C7B9D45001448B0 /* IQKeyboardManagerSwift in Frameworks */,
 				BF7223062C748791004BF726 /* Kingfisher in Frameworks */,
-				BF7222FF2C73367A004BF726 /* Then in Frameworks */,
 				BF7222D82C708D0D004BF726 /* RxCocoa in Frameworks */,
+				BF76A15A2C84981800FC6974 /* Then in Frameworks */,
 				BF7222C82C6F261E004BF726 /* Alamofire in Frameworks */,
 				BF7222DA2C708D0D004BF726 /* RxSwift in Frameworks */,
+				BF76A1572C84980900FC6974 /* iamport-ios in Frameworks */,
 				BF7222CB2C6F263E004BF726 /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -342,9 +344,10 @@
 				BF7222CA2C6F263E004BF726 /* SnapKit */,
 				BF7222D72C708D0D004BF726 /* RxCocoa */,
 				BF7222D92C708D0D004BF726 /* RxSwift */,
-				BF7222FE2C73367A004BF726 /* Then */,
 				BF7223052C748791004BF726 /* Kingfisher */,
 				BF61D0702C7B9D45001448B0 /* IQKeyboardManagerSwift */,
+				BF76A1562C84980900FC6974 /* iamport-ios */,
+				BF76A1592C84981800FC6974 /* Then */,
 			);
 			productName = Dbokey;
 			productReference = BF19C8E62C6C7CC800A59041 /* Dbokey.app */;
@@ -422,9 +425,10 @@
 				BF7222C62C6F261E004BF726 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				BF7222C92C6F263E004BF726 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				BF7222D62C708D0D004BF726 /* XCRemoteSwiftPackageReference "RxSwift" */,
-				BF7222FD2C73367A004BF726 /* XCRemoteSwiftPackageReference "Then" */,
 				BF7223042C748790004BF726 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				BF61D06F2C7B9D45001448B0 /* XCRemoteSwiftPackageReference "IQKeyboardManager" */,
+				BF76A1552C84980900FC6974 /* XCRemoteSwiftPackageReference "iamport-ios" */,
+				BF76A1582C84981800FC6974 /* XCRemoteSwiftPackageReference "Then" */,
 			);
 			productRefGroup = BF19C8E72C6C7CC800A59041 /* Products */;
 			projectDirPath = "";
@@ -688,6 +692,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -715,6 +720,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -878,20 +884,28 @@
 				minimumVersion = 6.7.1;
 			};
 		};
-		BF7222FD2C73367A004BF726 /* XCRemoteSwiftPackageReference "Then" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/devxoul/Then.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.0.0;
-			};
-		};
 		BF7223042C748790004BF726 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 7.12.0;
+			};
+		};
+		BF76A1552C84980900FC6974 /* XCRemoteSwiftPackageReference "iamport-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/iamport/iamport-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.4.2;
+			};
+		};
+		BF76A1582C84981800FC6974 /* XCRemoteSwiftPackageReference "Then" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/devxoul/Then.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -922,15 +936,20 @@
 			package = BF7222D62C708D0D004BF726 /* XCRemoteSwiftPackageReference "RxSwift" */;
 			productName = RxSwift;
 		};
-		BF7222FE2C73367A004BF726 /* Then */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BF7222FD2C73367A004BF726 /* XCRemoteSwiftPackageReference "Then" */;
-			productName = Then;
-		};
 		BF7223052C748791004BF726 /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BF7223042C748790004BF726 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		BF76A1562C84980900FC6974 /* iamport-ios */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BF76A1552C84980900FC6974 /* XCRemoteSwiftPackageReference "iamport-ios" */;
+			productName = "iamport-ios";
+		};
+		BF76A1592C84981800FC6974 /* Then */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BF76A1582C84981800FC6974 /* XCRemoteSwiftPackageReference "Then" */;
+			productName = Then;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -24,18 +24,36 @@ class MainViewController: UIViewController {
     let disposeBag = DisposeBag()
     var postDetailData: [PostData] = []
     var category = ""
+    let loadMoreTrigger = PublishSubject<Void>()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         configureHierarchy()
         configureLayout()
         configureUI()
         bind()
+        setupPagination()
     }
+    func setupPagination() {
+            bottomCollectionView.rx.contentOffset
+                .filter { [weak self] offset in
+                    guard let self = self else { return false }
+                    let contentHeight = self.bottomCollectionView.contentSize.height
+                    let scrollViewHeight = self.bottomCollectionView.frame.size.height
+                    let threshold: CGFloat = 100 // 스크롤이 하단에서 100포인트 떨어졌을 때 로드
+                    return offset.y + scrollViewHeight > contentHeight - threshold
+                }
+                .debounce(.milliseconds(500), scheduler: MainScheduler.instance)
+                .distinctUntilChanged()
+                .map { _ in () }
+                .bind(to: loadMoreTrigger)
+                .disposed(by: disposeBag)
+        }
     func bind() {
         let cellLikeButtonTap = PublishSubject<String>()
         let select = topCollectionView.rx.modelSelected(CategoryItem.self)
         
-        let input = MainViewModel.Input(select: select, likeTap: cellLikeButtonTap, selectCell: bottomCollectionView.rx.itemSelected)
+        let input = MainViewModel.Input(select: select, likeTap: cellLikeButtonTap, selectCell: bottomCollectionView.rx.itemSelected, loadMore: loadMoreTrigger.asObservable())
         let output = viewModel.transform(input: input)
         
         // TopCollectionView
