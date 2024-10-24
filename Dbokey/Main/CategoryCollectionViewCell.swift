@@ -13,10 +13,9 @@ class CategoryCollectionViewCell: UICollectionViewCell {
     static let id = "CategoryCollectionViewCell"
 
     let CategoryLbel = UILabel().then {
-        //$0.setTitleColor(.black, for: .normal)
-        //$0.titleLabel?.font = .systemFont(ofSize: 15)
+        $0.textColor = .accent
         $0.textAlignment = .center
-        $0.font = .systemFont(ofSize: 15)
+        $0.font = .boldSystemFont(ofSize: 15)
     }
     override init(frame: CGRect) {
         super.init(frame: frame)

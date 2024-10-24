@@ -64,8 +64,6 @@ class MainViewController: UIViewController {
         output.categories
             .bind(to: topCollectionView.rx.items(cellIdentifier: CategoryCollectionViewCell.id, cellType: CategoryCollectionViewCell.self)) { (row, element, cell) in
                 cell.CategoryLbel.text = element.title
-                cell.CategoryLbel.font = .boldSystemFont(ofSize: 15)
-                cell.CategoryLbel.textColor = Constant.Color.accent
             }
             .disposed(by: disposeBag)
         
