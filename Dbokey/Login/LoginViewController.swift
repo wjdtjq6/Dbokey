@@ -31,7 +31,7 @@ final class LoginViewController: UIViewController {
         Observable.combineLatest(output.validationEmail, output.validationPW) { $0 && $1 }//ouput
             .bind(with: self, onNext: { owner, value in
                 owner.signInButton.isEnabled = value
-                let color: UIColor = value ? .black : .lightGray
+                let color: UIColor = value ? Constant.Color.accent : Constant.Color.grey
                 owner.signInButton.backgroundColor = color
             })
             .disposed(by: disposeBag)

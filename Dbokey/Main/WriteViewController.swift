@@ -19,7 +19,7 @@ class WriteViewController: UIViewController {
     var postID = ""
     private let imageButton = UIButton().then {
         $0.setImage(UIImage(systemName: "camera.fill"), for: .normal)
-        $0.layer.borderColor = UIColor.lightGray.cgColor
+        $0.layer.borderColor = UIColor.grey.cgColor
         $0.layer.cornerRadius = 5
         $0.layer.borderWidth = 1
         $0.tintColor = .black
@@ -54,7 +54,7 @@ class WriteViewController: UIViewController {
     var categoryButton = UIButton().then {
             $0.setTitle("카테고리 선택", for: .normal)
             $0.setTitleColor(.black, for: .normal)
-            $0.backgroundColor = .systemGray6
+        $0.backgroundColor = UIColor.systemGray6
             $0.layer.cornerRadius = 5
             $0.contentHorizontalAlignment = .left
             $0.contentEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
@@ -93,7 +93,7 @@ class WriteViewController: UIViewController {
     }
     var contentTextView = UITextView().then {
         $0.text = "게시글 내용을 작성해주세요\n- 구매시기\n- 자세한 설명"
-        $0.textColor = .lightGray
+        $0.textColor = .grey
         $0.textAlignment = .left  // 텍스트 정렬 (상단에 자동 정렬됨)
         //$0.translatesAutoresizingMaskIntoConstraints = false
         $0.font = UIFont.systemFont(ofSize: 16)
@@ -132,7 +132,7 @@ class WriteViewController: UIViewController {
     private func setupTextView() {
         contentTextView.delegate = self
         if contentTextView.text == "게시글 내용을 작성해주세요\n- 구매시기\n- 자세한 설명" {
-            contentTextView.textColor = .lightGray
+            contentTextView.textColor = .grey
         } else {
             contentTextView.textColor = .black
         }
@@ -282,7 +282,7 @@ class WriteViewController: UIViewController {
                 else if self.titleTextField.text!.isEmpty {
                     self.showAlert(title: "업로드 실패", message: "용품명을 작성해주세요.")
                 }
-                else if (self.contentTextView.textColor == UIColor.lightGray) &&  self.contentTextView.text.isEmpty {
+                else if (self.contentTextView.textColor == UIColor.grey) &&  self.contentTextView.text.isEmpty {
                     self.showAlert(title: "업로드 실패", message: "내용을 작성해주세요.")
                 }
                 else if self.locationTextField.text!.isEmpty {
@@ -376,7 +376,7 @@ extension WriteViewController: UITextViewDelegate, PHPickerViewControllerDelegat
         }
     }
     func textViewDidBeginEditing(_ textView: UITextView) {
-        if textView.textColor == .lightGray {
+        if textView.textColor == .grey {
             textView.text = nil
             textView.textColor = .black
         }
@@ -384,7 +384,7 @@ extension WriteViewController: UITextViewDelegate, PHPickerViewControllerDelegat
     func textViewDidEndEditing(_ textView: UITextView) {
         if textView.text.isEmpty {
             textView.text = "게시글 내용을 작성해주세요\n- 구매시기\n- 자세한 설명"
-            textView.textColor = .lightGray
+            textView.textColor = .grey
         }
     }
 }

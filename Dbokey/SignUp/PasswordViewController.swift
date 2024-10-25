@@ -46,7 +46,7 @@ class PasswordViewController: UIViewController {
             .bind(with: self) { owner, value in
                 owner.nextButton.isEnabled = value
                 owner.descriptionLabel.isHidden = value
-                let color: UIColor = value ? .black : .lightGray
+                let color: UIColor = value ? Constant.Color.accent : Constant.Color.grey
                 owner.nextButton.backgroundColor = color
             }
             .disposed(by: disposeBag)

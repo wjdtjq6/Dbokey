@@ -109,7 +109,7 @@ class BirthdayViewController: UIViewController {
                 let labelText: String = value ? "가입 가능한 나이입니다" : "만 17세 이상만 가입 가능합니다."
                 owner.infoLabel.text = labelText
                 
-                let buttonColor: UIColor = value ? .black : .lightGray
+                let buttonColor: UIColor = value ? Constant.Color.accent : Constant.Color.grey
                 owner.nextButton.backgroundColor = buttonColor
             }
             .disposed(by: disposeBag)

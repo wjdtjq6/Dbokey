@@ -118,6 +118,6 @@ class MySellViewController: UIViewController {
         view.backgroundColor = .white
         navigationItem.title = "내 판매 목록"
         navigationItem.backButtonTitle = ""
-        navigationController?.navigationBar.tintColor = .black
+        navigationController?.navigationBar.tintColor = Constant.Color.accent
     }
 }

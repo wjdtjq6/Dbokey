@@ -27,7 +27,7 @@ final class ProfileView: UIView {
         let label = UILabel()
         label.text = "user@example.com"
         label.font = .systemFont(ofSize: 16)
-        label.textColor = .gray
+        label.textColor = .grey
         return label
     }()
     
@@ -42,7 +42,7 @@ final class ProfileView: UIView {
         let label = UITextField()
         label.placeholder = "010-1234-1234"
         label.font = .systemFont(ofSize: 16)
-        label.textColor = .gray
+        label.textColor = .grey
         return label
     }()
 

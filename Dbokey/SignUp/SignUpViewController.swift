@@ -37,7 +37,7 @@ class SignUpViewController: UIViewController {
         output.validation//validation
             .bind(with: self) { owner, value in
                 owner.validationButton.isEnabled = value
-                let bgColor: UIColor = value ? .black : .lightGray
+                let bgColor: UIColor = value ? Constant.Color.accent : Constant.Color.grey
                 owner.validationButton.backgroundColor = bgColor
                 owner.validationButton.setTitleColor(.white, for: .normal)
             }
@@ -58,7 +58,7 @@ class SignUpViewController: UIViewController {
         output.validation//validation//output
             .bind(with: self) { owner, _ in
                 owner.nextButton.isEnabled = false
-                owner.nextButton.backgroundColor = .lightGray
+                owner.nextButton.backgroundColor = .grey
             }
             .disposed(by: disposeBag)
     }
@@ -67,7 +67,7 @@ class SignUpViewController: UIViewController {
         let check = UIAlertAction(title: "확인", style: .default) { _ in
             if message == "사용 가능한 이메일입니다." {
                 self.nextButton.isEnabled = true
-                self.nextButton.backgroundColor = .black
+                self.nextButton.backgroundColor = Constant.Color.accent
                 self.nextButton.setTitleColor(.white, for: .normal)
             }
         }

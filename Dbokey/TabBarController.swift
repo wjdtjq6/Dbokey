@@ -10,8 +10,8 @@ import UIKit
 class TabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        tabBar.tintColor = .black
-        tabBar.unselectedItemTintColor = .lightGray
+        tabBar.tintColor = Constant.Color.accent
+        tabBar.unselectedItemTintColor = .grey
 
         let main = MainViewController()
         let nav1 = UINavigationController(rootViewController: main)

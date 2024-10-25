@@ -13,8 +13,12 @@ import RxCocoa
 import Kingfisher
 
 class MainViewController: UIViewController {
-    let topCollectionView = UICollectionView(frame: .zero, collectionViewLayout: topLayout())
-    let bottomCollectionView = UICollectionView(frame: .zero, collectionViewLayout: bottomLayout())
+    let titleLabel = UILabel().then {
+        $0.text = "홈"
+        $0.font = .boldSystemFont(ofSize: 30)
+    }
+    lazy var topCollectionView = UICollectionView(frame: .zero, collectionViewLayout: topLayout())
+    lazy var bottomCollectionView = UICollectionView(frame: .zero, collectionViewLayout: bottomLayout())
     let noResultLabel = UILabel().then {
         $0.text = "검색 결과가 없습니다."
         $0.font = .systemFont(ofSize: 20)
@@ -60,6 +64,8 @@ class MainViewController: UIViewController {
         output.categories
             .bind(to: topCollectionView.rx.items(cellIdentifier: CategoryCollectionViewCell.id, cellType: CategoryCollectionViewCell.self)) { (row, element, cell) in
                 cell.CategoryLbel.text = element.title
+                cell.CategoryLbel.font = .boldSystemFont(ofSize: 15)
+                cell.CategoryLbel.textColor = Constant.Color.accent
             }
             .disposed(by: disposeBag)
         
@@ -126,15 +132,17 @@ class MainViewController: UIViewController {
             }
             .disposed(by: disposeBag)    }
     
-    static func topLayout() -> UICollectionViewFlowLayout {
-        let layout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize(width: 85, height: 50)
+    func topLayout() -> UICollectionViewFlowLayout {
+        var layout = UICollectionViewFlowLayout()
+        //layout.itemSize = CGSize(width: category + 20, height: 50)
         layout.scrollDirection = .horizontal
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
-        //layout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 18, bottom: 30, right: 30)
+        layout.minimumLineSpacing = 30
+        //layout.minimumInteritemSpacing = 100
+        layout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
         return layout
     }
-    static func bottomLayout() -> UICollectionViewFlowLayout {
+    func bottomLayout() -> UICollectionViewFlowLayout {
         let layout = UICollectionViewFlowLayout()
         let width = UIScreen.main.bounds.width - 15
         layout.itemSize = CGSize(width: width/2, height: 260)
@@ -154,9 +162,9 @@ class MainViewController: UIViewController {
     }
     func configureLayout() {
         topCollectionView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(15)
             make.horizontalEdges.equalTo(view.safeAreaLayoutGuide)
-            make.height.equalTo(50)
+            make.height.equalTo(30)
         }
         bottomCollectionView.snp.makeConstraints { make in
             make.top.equalTo(topCollectionView.snp.bottom)
@@ -169,10 +177,20 @@ class MainViewController: UIViewController {
     }
     func configureUI() {
         view.backgroundColor = .white
+        navigationItem.backButtonTitle = ""
         let rightBarButton = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(barButtonCliecked))
         navigationItem.rightBarButtonItem = rightBarButton
-        rightBarButton.tintColor = .black
-        navigationItem.backButtonTitle = ""
+        rightBarButton.tintColor = Constant.Color.accent
+        
+//        navigationController?.navigationBar.prefersLargeTitles = true
+//        navigationItem.largeTitleDisplayMode = .always
+//        navigationItem.title = "홈"
+        titleLabel
+        let leftBarButton = UIBarButtonItem(customView: titleLabel)
+        navigationItem.leftBarButtonItem = leftBarButton
+        
+        topCollectionView.showsHorizontalScrollIndicator = false
+        
 
     }
     @objc func barButtonCliecked() {

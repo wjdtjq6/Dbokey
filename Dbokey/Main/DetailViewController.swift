@@ -38,7 +38,7 @@ class DetailViewController: UIViewController {
            return collectionView
        }()
     let pageControl = UIPageControl().then {
-        $0.pageIndicatorTintColor = .lightGray
+        $0.pageIndicatorTintColor = .grey
         $0.currentPageIndicatorTintColor = .white
     }
     static func layout() -> UICollectionViewFlowLayout {
@@ -50,11 +50,11 @@ class DetailViewController: UIViewController {
         return layout
     }
     let likeFuncButton = UIButton().then {
-        $0.setImage(UIImage(systemName: "bookmark"), for: .normal)
-        $0.setImage(UIImage(systemName: "bookmark.fill"), for: .selected)
-        $0.tintColor = .white
-        $0.transform = CGAffineTransform(scaleX: 2, y: 1.5) // 이미지를 2배로 확대
-        $0.backgroundColor = UIColor.black.withAlphaComponent(0.3)
+        $0.setImage(UIImage(named: "book_mark"), for: .normal)
+        $0.setImage(UIImage(named: "book_mark.fill"), for: .selected)
+        $0.contentMode = .scaleAspectFit
+        $0.tintColor = Constant.Color.accent
+        $0.transform = CGAffineTransform(scaleX: 1.5, y: 2) // 이미지를 2배로 확대
         $0.addTarget(self, action: #selector(likeFuncButtonClicked), for: .touchUpInside)
     }
     @objc func likeFuncButtonClicked() {
@@ -88,28 +88,28 @@ class DetailViewController: UIViewController {
     }
     var locationLabel = UILabel().then {
         $0.font = .systemFont(ofSize: 11)
-        $0.textColor = .gray
+        $0.textColor = .grey
     }
     let soldoutLabel = UILabel().then {
         $0.font = .boldSystemFont(ofSize: 16)
-        $0.textColor = .darkGray
+        $0.textColor = .grey
         $0.textAlignment = .center
     }
     let uiView = UIView().then {
         $0.layer.cornerRadius = 10
         $0.clipsToBounds = true
-        $0.backgroundColor = .systemGray6
+        $0.backgroundColor = .oasis
     }
     let newOrusedLabel = UILabel().then {
         $0.font = .boldSystemFont(ofSize: 16)
-        $0.textColor = .darkGray
+        $0.textColor = Constant.Color.accent
         $0.textAlignment = .center
     }
     let vSeparator = UIView().then {
-        $0.backgroundColor = .gray
+        $0.backgroundColor = .grey
     }
     let separator = UIView().then {
-        $0.backgroundColor = .gray
+        $0.backgroundColor = .grey
     }
     let brandLabel = UILabel().then {
         $0.font = .boldSystemFont(ofSize: 17)
@@ -118,11 +118,11 @@ class DetailViewController: UIViewController {
         $0.font = .boldSystemFont(ofSize: 17)
     }
     let categoryLabel = UILabel().then {
-        $0.textColor = .gray
+        $0.textColor = .grey
         $0.font = .systemFont(ofSize: 15)
     }
     let createdLabel = UILabel().then {
-        $0.textColor = .gray
+        $0.textColor = .grey
         $0.font = .systemFont(ofSize: 15)
     }
     let priceLabel = UILabel().then {
@@ -130,7 +130,8 @@ class DetailViewController: UIViewController {
     }
     let buyButton = PointButton(title: "구매하기").then {
         $0.addTarget(self, action: #selector(buyButtonClicked), for: .touchUpInside)
-        $0.backgroundColor = .black
+        $0.backgroundColor = Constant.Color.accent
+        $0.titleLabel?.font = .boldSystemFont(ofSize: 15)
     }
     let contentLabel = UILabel().then {
         $0.font = .systemFont(ofSize: 16)
@@ -138,7 +139,7 @@ class DetailViewController: UIViewController {
         $0.lineBreakMode = .byTruncatingTail // 잘린 부분을 "..."으로 표시
     }
     let separator2 = UIView().then {
-        $0.backgroundColor = .gray
+        $0.backgroundColor = .grey
     }
     let commentLabel = UILabel().then {
         $0.font = .boldSystemFont(ofSize: 15)
@@ -221,6 +222,8 @@ class DetailViewController: UIViewController {
         likeFuncButton.snp.makeConstraints { make in
             make.bottom.equalTo(collectionView.snp.bottom).inset(20)
             make.trailing.equalTo(contentView).inset(20)
+            make.width.equalTo(20)
+            make.height.equalTo(20)
         }
         nickLabel.snp.makeConstraints { make in
             make.top.equalTo(collectionView.snp.bottom).offset(20)
@@ -299,13 +302,12 @@ class DetailViewController: UIViewController {
     func configureUI() {
         view.backgroundColor = .white
         wkWebView.isHidden = true
-        navigationController?.navigationBar.tintColor = .black
+        navigationController?.navigationBar.tintColor = Constant.Color.accent
         scrollView.contentInsetAdjustmentBehavior = .never// 스크롤 뷰 자동 조정 방지
         
         //메인에서는 수정,삭제 안되고 마이-나의판매내역-셀클릭해서만 보이도록!
         let rightBarButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: #selector(barButtonCliecked))
         navigationItem.rightBarButtonItem = rightBarButton
-        rightBarButton.tintColor = .black
         
         pageControl.numberOfPages = data?[row].files.count ?? 0
         pageControl.currentPage = 0
@@ -343,7 +345,7 @@ class DetailViewController: UIViewController {
         }
         let attributes: [NSAttributedString.Key: Any] = [
             .underlineStyle: NSUnderlineStyle.single.rawValue,
-            .underlineColor: UIColor.darkGray]
+            .underlineColor: UIColor.grey]
         let attributedString = NSAttributedString(string: text, attributes: attributes)
         categoryLabel.attributedText = attributedString
         
@@ -369,7 +371,7 @@ class DetailViewController: UIViewController {
         case .withButton:
             let rightBarButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: #selector(barButtonCliecked))
             navigationController?.navigationItem.rightBarButtonItem = rightBarButton
-            rightBarButton.tintColor = .black
+            rightBarButton.tintColor = Constant.Color.accent
             buyButton.isEnabled = false
         case .withoutButton:
             //navigationItem.rightBarButtonItem?.isHidden = true 아래랑 같은 기능
@@ -412,7 +414,7 @@ class DetailViewController: UIViewController {
                 vc.contentTextView.textColor = .black
             } else {
                 vc.contentTextView.text = "게시글 내용을 작성해주세요\n- 구매시기\n- 자세한 설명"
-                vc.contentTextView.textColor = .lightGray
+                vc.contentTextView.textColor = .grey
             }
             
             // 카테고리 설정

@@ -40,7 +40,7 @@ class PhoneNumViewController: UIViewController {
         output.validation
             .bind(with: self, onNext: { owner, value in
                 owner.nextButton.isEnabled = value
-                let color: UIColor = value ? .black : .lightGray
+                let color: UIColor = value ? Constant.Color.accent : Constant.Color.grey
                 owner.nextButton.backgroundColor = color
                 
             })
