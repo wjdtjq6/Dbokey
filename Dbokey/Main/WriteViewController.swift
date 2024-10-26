@@ -18,11 +18,23 @@ class WriteViewController: UIViewController {
     var mode: uploadMode = .writeMode
     var postID = ""
     private let imageButton = UIButton().then {
+        $0.backgroundColor = .systemGray6
         $0.setImage(UIImage(systemName: "camera.fill"), for: .normal)
-        $0.layer.borderColor = UIColor.grey.cgColor
-        $0.layer.cornerRadius = 5
+        $0.layer.cornerRadius = 8
         $0.layer.borderWidth = 1
-        $0.tintColor = .black
+        $0.layer.borderColor = UIColor.systemGray4.cgColor
+        $0.tintColor = Constant.Color.accent
+        
+        // 그림자 효과
+        $0.layer.shadowColor = UIColor.black.cgColor
+        $0.layer.shadowOffset = CGSize(width: 0, height: 1)
+        $0.layer.shadowOpacity = 0.1
+        $0.layer.shadowRadius = 1
+        
+        // 카메라 아이콘 크기 조정
+        let imageConfig = UIImage.SymbolConfiguration(pointSize: 24, weight: .medium)
+        $0.setPreferredSymbolConfiguration(imageConfig, forImageIn: .normal)
+        
         $0.addTarget(self, action: #selector(imageButtonClicked), for: .touchUpInside)
     }
     private let imageContainerViews: [UIView] = (0..<5).map { _ in
@@ -52,14 +64,34 @@ class WriteViewController: UIViewController {
         $0.borderStyle = .roundedRect
     }
     var categoryButton = UIButton().then {
-            $0.setTitle("카테고리 선택", for: .normal)
-            $0.setTitleColor(.black, for: .normal)
-        $0.backgroundColor = UIColor.systemGray6
-            $0.layer.cornerRadius = 5
-            $0.contentHorizontalAlignment = .left
-            $0.contentEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
-            $0.addTarget(self, action: #selector(categoryButtonTapped), for: .touchUpInside)
-        }
+        $0.setTitle("카테고리 선택", for: .normal)
+        $0.titleLabel?.font = .systemFont(ofSize: 16)
+        $0.setTitleColor(.black, for: .normal)
+        
+        // 배경색과 테두리 설정
+        $0.backgroundColor = .white
+        $0.layer.cornerRadius = 8
+        $0.layer.borderWidth = 1
+        $0.layer.borderColor = UIColor.systemGray4.cgColor
+        
+        // 내부 여백과 그림자 설정
+        $0.contentEdgeInsets = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+        $0.layer.shadowColor = UIColor.black.cgColor
+        $0.layer.shadowOffset = CGSize(width: 0, height: 1)
+        $0.layer.shadowOpacity = 0.1
+        $0.layer.shadowRadius = 1
+        
+        // 오른쪽 화살표 아이콘 추가
+        let imageConfig = UIImage.SymbolConfiguration(pointSize: 12, weight: .medium)
+        let arrowImage = UIImage(systemName: "chevron.down", withConfiguration: imageConfig)
+        $0.setImage(arrowImage, for: .normal)
+        $0.tintColor = .black
+        $0.semanticContentAttribute = .forceRightToLeft
+        $0.imageEdgeInsets = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 0)
+        
+        // 터치 효과 설정
+        $0.addTarget(self, action: #selector(categoryButtonTapped), for: .touchUpInside)
+    }
     private let categories = [
         ("기성품 키보드", "dbokeyt_made"),
         ("커스텀 키보드", "dbokey_custom"),
@@ -83,6 +115,9 @@ class WriteViewController: UIViewController {
         $0.selectedSegmentIndex = 0  // 기본값으로 첫 번째 항목 선택
         $0.translatesAutoresizingMaskIntoConstraints = false
         $0.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
+       // $0.setTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor.white], for: .normal)
+        //$0.backgroundColor = Constant.Color.accent
+        //$0.selectedSegmentTintColor = Constant.Color.chardonnay
     }
     private let stateLabel = UILabel().then {
         $0.text = "물품상태"
@@ -244,11 +279,11 @@ class WriteViewController: UIViewController {
         view.backgroundColor = .white
         let leftBarButton = UIBarButtonItem(image: UIImage(systemName: "xmark"), style: .plain, target: self, action: #selector(leftBarButtonClicked))
         navigationItem.leftBarButtonItem = leftBarButton
-        leftBarButton.tintColor = .black
+        leftBarButton.tintColor = Constant.Color.accent
         let rightBarButton = UIBarButtonItem(title: "완료", style: .plain, target: self, action: #selector(rightBarButtonCliecked))
         navigationItem.rightBarButtonItem = rightBarButton
         navigationItem.rightBarButtonItem = rightBarButton
-        rightBarButton.tintColor = .black
+        rightBarButton.tintColor = Constant.Color.accent
     }
     @objc private func leftBarButtonClicked() {
         navigationController?.dismiss(animated: true)

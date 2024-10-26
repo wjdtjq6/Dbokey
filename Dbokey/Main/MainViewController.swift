@@ -39,20 +39,20 @@ class MainViewController: UIViewController {
         setupPagination()
     }
     func setupPagination() {
-            bottomCollectionView.rx.contentOffset
-                .filter { [weak self] offset in
-                    guard let self = self else { return false }
-                    let contentHeight = self.bottomCollectionView.contentSize.height
-                    let scrollViewHeight = self.bottomCollectionView.frame.size.height
-                    let threshold: CGFloat = 100 // 스크롤이 하단에서 100포인트 떨어졌을 때 로드
-                    return offset.y + scrollViewHeight > contentHeight - threshold
-                }
-                .debounce(.milliseconds(500), scheduler: MainScheduler.instance)
-                .distinctUntilChanged()
-                .map { _ in () }
-                .bind(to: loadMoreTrigger)
-                .disposed(by: disposeBag)
-        }
+        bottomCollectionView.rx.contentOffset
+            .filter { [weak self] offset in
+                guard let self = self else { return false }
+                let contentHeight = self.bottomCollectionView.contentSize.height
+                let scrollViewHeight = self.bottomCollectionView.frame.size.height
+                let threshold: CGFloat = 100 // 스크롤이 하단에서 100포인트 떨어졌을 때 로드
+                return offset.y + scrollViewHeight > contentHeight - threshold
+            }
+            .debounce(.milliseconds(1), scheduler: MainScheduler.instance)
+            .distinctUntilChanged()
+            .map { _ in () }
+            .bind(to: loadMoreTrigger)
+            .disposed(by: disposeBag)
+    }
     func bind() {
         let cellLikeButtonTap = PublishSubject<String>()
         let select = topCollectionView.rx.modelSelected(CategoryItem.self)

@@ -50,7 +50,7 @@ class MainViewModel {
     private var currentCategory: CategoryItem?
     
     private var isLoading = false
-   private var hasMorePages = true
+    private var hasMorePages = true
     
     //TopCollectioView Data
     private let categories: [CategoryItem] = [
