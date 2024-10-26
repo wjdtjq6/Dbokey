@@ -29,7 +29,9 @@ class MainViewController: UIViewController {
     var postDetailData: [PostData] = []
     var category = ""
     let loadMoreTrigger = PublishSubject<Void>()
-
+    // 초기 로드 트리거 추가
+    let initialLoadTrigger = PublishSubject<Void>()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         configureHierarchy()
@@ -37,18 +39,22 @@ class MainViewController: UIViewController {
         configureUI()
         bind()
         setupPagination()
+        // 초기 데이터 로드 트리거
+        initialLoadTrigger.onNext(())
     }
+    
     func setupPagination() {
         bottomCollectionView.rx.contentOffset
             .filter { [weak self] offset in
                 guard let self = self else { return false }
                 let contentHeight = self.bottomCollectionView.contentSize.height
                 let scrollViewHeight = self.bottomCollectionView.frame.size.height
-                let threshold: CGFloat = 100 // 스크롤이 하단에서 100포인트 떨어졌을 때 로드
+                let threshold: CGFloat = 100
+                // 컨텐츠 높이가 스크롤뷰 높이보다 작으면 페이지네이션 하지 않음
+                guard contentHeight > scrollViewHeight else { return false }
                 return offset.y + scrollViewHeight > contentHeight - threshold
             }
-            .debounce(.milliseconds(1), scheduler: MainScheduler.instance)
-            .distinctUntilChanged()
+            .debounce(.milliseconds(10), scheduler: MainScheduler.instance)
             .map { _ in () }
             .bind(to: loadMoreTrigger)
             .disposed(by: disposeBag)
@@ -57,7 +63,8 @@ class MainViewController: UIViewController {
         let cellLikeButtonTap = PublishSubject<String>()
         let select = topCollectionView.rx.modelSelected(CategoryItem.self)
         
-        let input = MainViewModel.Input(select: select, likeTap: cellLikeButtonTap, selectCell: bottomCollectionView.rx.itemSelected, loadMore: loadMoreTrigger.asObservable())
+        let input = MainViewModel.Input(select: select, likeTap: cellLikeButtonTap, selectCell: bottomCollectionView.rx.itemSelected, loadMore: loadMoreTrigger.asObservable(), initialLoad: initialLoadTrigger.asObservable()  // 추가
+        )
         let output = viewModel.transform(input: input)
         
         // TopCollectionView
@@ -90,13 +97,12 @@ class MainViewController: UIViewController {
             .disposed(by: disposeBag)
         
         output.list
-           // .map({ $0.data })//예는 [PostData]
             .bind(to: bottomCollectionView.rx.items(cellIdentifier: ListCollectionViewCell.id, cellType: ListCollectionViewCell.self)) { (row, element, cell) in
                 cell.titleLabel.text = self.postDetailData[row].title
                 cell.location.text = self.postDetailData[row].content2
-                cell.price.text = self.postDetailData[row].price.formatted() + "원"//Int(self.postDetailData[row].content2)?.formatted()//(Int(element.content2!)?.formatted())! + "원"
+                cell.price.text = self.postDetailData[row].price.formatted() + "원"
                 
-                if let urlString = self.postDetailData[row].files.first, let url = URL(string: APIKey.BaseURL+"v1/"+urlString!) {//element.files.first, let url = URL(string: APIKey.BaseURL+"v1/" + urlString!) {
+                if let urlString = self.postDetailData[row].files.first, let url = URL(string: APIKey.BaseURL+"v1/"+urlString!) {
                     let modifier = AnyModifier { request in
                         var request = request
                         request.setValue(APIKey.SesacKey, forHTTPHeaderField: "SesacKey")
@@ -107,9 +113,7 @@ class MainViewController: UIViewController {
                 }
                 cell.soldOut.isHidden = self.postDetailData[row].likes2.isEmpty ? true : false//element.likes2.isEmpty ?  true : false
 
-                cell.likeFuncButton.isSelected = self.postDetailData[row].likes.contains(UserDefaultsManager.shared.user_id)//element.likes.contains(UserDefaultsManager.shared.user_id)
-    //                print(cell.likeFuncButton.isSelected,"셀렉됐냐????")
-    //                print(element.likes.contains(UserDefaultsManager.shared.user_id),"마포대교는 문어졌냐")
+                cell.likeFuncButton.isSelected = self.postDetailData[row].likes.contains(UserDefaultsManager.shared.user_id)
                 cell.likeFuncButton.rx.tap
                     .subscribe(with: self) { owner, _
                         in
@@ -176,14 +180,11 @@ class MainViewController: UIViewController {
     func configureUI() {
         view.backgroundColor = .white
         navigationItem.backButtonTitle = ""
+        
         let rightBarButton = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(barButtonCliecked))
         navigationItem.rightBarButtonItem = rightBarButton
         rightBarButton.tintColor = Constant.Color.accent
-        
-//        navigationController?.navigationBar.prefersLargeTitles = true
-//        navigationItem.largeTitleDisplayMode = .always
-//        navigationItem.title = "홈"
-        titleLabel
+
         let leftBarButton = UIBarButtonItem(customView: titleLabel)
         navigationItem.leftBarButtonItem = leftBarButton
         

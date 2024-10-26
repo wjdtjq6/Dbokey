@@ -68,6 +68,7 @@ class MainViewModel {
         let likeTap: Observable<String>
         let selectCell: ControlEvent<IndexPath>
         let loadMore: Observable<Void>
+        let initialLoad: Observable<Void>  // 추가
     }
     struct Output {
         //탭한 결과 = 통신 응답
@@ -83,9 +84,16 @@ class MainViewModel {
         
         let categoryChanged = input.select.distinctUntilChanged()
         
-        let initialList = categoryChanged.flatMapLatest { [weak self] (item: CategoryItem) -> Observable<[PostData]> in
-            self?.currentCursor = "" // 카테고리 선택 시 cursor 초기화
+        // 초기 로드 트리거와 카테고리 변경을 머지
+        let initialList = Observable.merge(
+            // 초기 로드 시 첫 번째 카테고리 선택
+            input.initialLoad.map { self.categories[0] },
+            // 카테고리 선택
+            categoryChanged
+        ).flatMapLatest { [weak self] (item: CategoryItem) -> Observable<[PostData]> in
+            self?.currentCursor = ""
             self?.currentCategory = item
+            self?.hasMorePages = true
             return self?.fetchData(for: item, cursor: "") ?? .empty()
         }.share(replay: 1, scope: .forever)
 
@@ -112,11 +120,22 @@ class MainViewModel {
         return Output(list: listObservable, likeList: likeList, categories: Observable.just(categories), selectCell: input.selectCell, selectedCategoryTitle: selectedCategoryTitle)
     }
     private func fetchData(for item: CategoryItem, cursor: String) -> Observable<[PostData]> {
+        // 이미 다음 페이지가 없으면 빈 배열 반환
+        guard hasMorePages else { return .just([]) }
+        
         switch item {
         case .category(let category):
             return NetworkManager.viewPost(next: cursor, limit: "6", productId: category.productId, productId1: category.productId1, productId2: category.productId2, productId3: category.productId3, productId4: category.productId4, productId5: category.productId5)
                 .do(onSuccess: { [weak self] response in
+                    // next_cursor가 "0"이면 더 이상 데이터가 없음
+                    if response.next_cursor == "0" {
+                        self?.hasMorePages = false
+                    }
                     self?.currentCursor = response.next_cursor
+                    self?.isLoading = false
+                })
+                .do(onError: { [weak self] _ in
+                    self?.isLoading = false
                 })
                 .map { $0.data }
                 .asObservable()
@@ -124,10 +143,19 @@ class MainViewModel {
                     print(error.localizedDescription)
                     return .just([])
                 }
+                
         case .category2(let category2):
             return NetworkManager.viewPost2(next: cursor, limit: "6", productId: category2.productId)
                 .do(onSuccess: { [weak self] response in
+                    // next_cursor가 "0"이면 더 이상 데이터가 없음
+                    if response.next_cursor == "0" {
+                        self?.hasMorePages = false
+                    }
                     self?.currentCursor = response.next_cursor
+                    self?.isLoading = false
+                })
+                .do(onError: { [weak self] _ in
+                    self?.isLoading = false
                 })
                 .map { $0.data }
                 .asObservable()
