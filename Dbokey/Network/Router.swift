@@ -244,11 +244,18 @@ extension Router: TargetType {
                 Header.contentType.rawValue: Header.multipart.rawValue,
                 Header.sesacKey.rawValue: APIKey.SesacKey
             ]
-        case .usersPost, .withdraw, .viewPost, .viewPost2, .deletePost, .idPost, .viewLikePost, .viewLike2Post, .viewProfile, .viewAnotherProfile, .refresh, .writePost, .editPost, .editComments,.writeComments, .deleteComments, .likePost ,.like2Post://follow, cancleFollow hashTags
+        case .usersPost, .withdraw, .viewPost, .viewPost2, .deletePost, .idPost, .viewLikePost, .viewLike2Post, .viewProfile, .viewAnotherProfile, .writePost, .editPost, .editComments,.writeComments, .deleteComments, .likePost ,.like2Post://follow, cancleFollow hashTags
             return [
                 Header.authorization.rawValue: UserDefaultsManager.shared.token,
                 Header.contentType.rawValue: Header.json.rawValue,
                 Header.sesacKey.rawValue: APIKey.SesacKey
+            ]
+        case .refresh:
+            return [
+                Header.authorization.rawValue: UserDefaultsManager.shared.token,
+                Header.contentType.rawValue: Header.json.rawValue,
+                Header.sesacKey.rawValue: APIKey.SesacKey,
+                Header.refresh.rawValue: UserDefaultsManager.shared.refreshToken!
             ]
         }
     }

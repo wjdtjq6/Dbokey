@@ -8,282 +8,303 @@
 import Foundation
 import Alamofire
 import RxSwift
+import UIKit
 
 struct NetworkManager {
     private init() {}
-    static func deletePost(post_id: String, completion: @escaping(Bool) -> Void) {
-        do {
-            let request = try Router.deletePost(postID: post_id).asURLRequest()
-            AF.request(request).response() { response in
-                switch response.result {
-                case .success(let success):
-                    print(success)
-                    completion(true)
-                case .failure(let error):
-                    print(error)
-                    completion(false)
-                }
-            }
-        } catch {
-            print("에러",error)
-        }
+    
+    // MARK: - Auth Session for Protected APIs
+    private static var authSession: Session {
+        return AuthenticationManager.shared.session
     }
-    static func editPost(post_id: String, title: String, content: String, content1: String, content2: String, content3: String, price: Int, product_id: String, files: [String], completion: @escaping (Result<PostData, Error>) -> Void) {
-        let query = writeEditPostQuery(title: title, content: content, content1: content1, content2: content2, content3: content3, price: price, product_id: product_id, files: files)
-        var request = try! Router.editPost(query: query, postID: post_id).asURLRequest()
-        print("Request Body: \(request.httpBody?.base64EncodedString())")
-        AF.request(request)
-            .validate(statusCode: 200...299)
-            .responseDecodable(of: PostData.self) { response in
-                print("statusCode", response.response?.statusCode)
-                switch response.result {
-                case .success(let value):
-                    completion(.success(value))
-                case .failure(let error):
-                    completion(.failure(error))
-                }
-            }
-    }
-    static func usersPost(userID: String, next: String, limit: String) -> Single<ViewPostModel> {
-       return Single.create { observer in
-           do {
-               var request = try Router.usersPost(userID: userID, next: next, limit: limit).asURLRequest()
+    
+    struct EmptyResponse: Decodable {}
 
-               if var urlComponents = URLComponents(url: request.url!, resolvingAgainstBaseURL: false) {
-                   urlComponents.queryItems = Router.usersPost(userID: userID, next: next, limit: limit).queryItems
-                   request.url = urlComponents.url
-               }
-
-               print("Complete URL: \(request.url?.absoluteString ?? "Invalid URL")")
-
-               AF.request(request)
-                   .validate(statusCode: 200...299)
-                   .responseDecodable(of: ViewPostModel.self) { response in
-                       switch response.result {
-                       case .success(let value):
-                           observer(.success(value))
-                       case .failure(let error):
-                           observer(.failure(error))
-                       }
-                   }
-           } catch {
-               observer(.failure(error))
-           }
-           return Disposables.create()
-       }
-   }
-    static func withdraw() {
-        do {
-            let request = try Router.withdraw.asURLRequest()
-            AF.request(request).responseDecodable(of: SignModel.self) { response in
-                print(response.response?.statusCode)
-                switch response.result {
-                case .success(let success):
-                    print(success)
-                case .failure(let error):
-                    print(error)
-                }
+    private static func refreshToken() -> Single<RefreshModel> {
+        return Single.create { observer in
+            guard let refreshToken = UserDefaultsManager.shared.refreshToken else {
+                print("⛔️ Refresh Token is missing")
+                observer(.failure(NetworkError.refreshTokenExpired))
+                return Disposables.create()
             }
-        } catch {
-            print("에러",error)
-        }
-    }
-    static func uploadFiles(images: [Data?], completion: @escaping (Result<uploadFilesModel, Error>) -> Void) {
-        let url = APIKey.BaseURL + "v1/posts/files"
-        
-        let token = UserDefaultsManager.shared.token
-        
-        let header:HTTPHeaders = [
-            Header.sesacKey.rawValue: APIKey.SesacKey,
-            Header.authorization.rawValue: token,
-            Header.contentType.rawValue: Header.multipart.rawValue
-        ]
-        
-        AF.upload(multipartFormData: { multipartFormData in
-            for (index, imageData) in images.enumerated() {
-                if let data = imageData {
-                    multipartFormData.append(data, withName: "files", fileName: "image\(index + 1).jpg", mimeType: "image/jpg")
+            
+            print("🔑 Using Refresh Token:", refreshToken)
+            
+            var request = try! Router.refresh.asURLRequest()
+            print("📝 Original Headers:", request.headers)
+            
+            request.headers = [
+                "Authorization": refreshToken,
+                "Content-Type": "application/json",
+                "SesacKey": APIKey.SesacKey
+            ]
+            
+            print("📝 Updated Headers:", request.headers)
+            
+            AF.request(request)
+                .responseData { response in  // 원본 데이터 확인
+                    print("📡 Raw Response:", String(data: response.data ?? Data(), encoding: .utf8) ?? "No Data")
                 }
-            }
-        }, to: url, headers: header)
-        .validate(statusCode: 200...299)
-        .responseDecodable(of: uploadFilesModel.self) { response in
-            if response.response?.statusCode == 400 {
-                // 400 에러일 때, completion을 통해 에러 전달
-                completion(.failure(NSError(domain: "NetworkError", code: 400, userInfo: [NSLocalizedDescriptionKey: "요청이 잘못되었습니다. 다시 시도해 주세요."])))
-            } else {
-                switch response.result {
-                case .success(let value):
-                    completion(.success(value))
+                .responseDecodable(of: RefreshModel.self) { response in
+                    print("📡 Status Code:", response.response?.statusCode ?? -1)
                     
-                case .failure(let error):
-                    completion(.failure(error))
-                }
-            }
-        }
-    }
-    static func uploadPostContents(title: String, content: String, content1: String, content2: String, content3: String, price: Int, product_id: String, files: [String], completion: @escaping (Result<PostData, Error>) -> Void) {
-        print(#function)
-        let query = writeEditPostQuery(title: title, content: content, content1: content1, content2: content2, content3: content3, price: price, product_id: product_id, files: files)
-        var request = try! Router.writePost(query: query).asURLRequest()
-        print("Request Body: \(request.httpBody?.base64EncodedString())")
-            AF.request(request)
-                .validate(statusCode: 200...299)
-                .responseDecodable(of: PostData.self) { response in
-                    print("statusCode", response.response?.statusCode)
                     switch response.result {
-                    case .success(let value):
-                        completion(.success(value))
+                    case .success(let model):
+                        print("✅ Token Refresh Success")
+                        UserDefaultsManager.shared.token = model.accessToken
+                        observer(.success(model))
                     case .failure(let error):
-                        completion(.failure(error))
-                    }
-                }   
-    }
-    static func likePost(postID: String, like_status: Bool, completion: @escaping (Result<likeModel, Error>) -> Void) {
-        let query = likePostQuery(like_status: like_status)
-        let request = try! Router.likePost(postID: postID, query: query).asURLRequest()
-        print("Request Body: \(request.httpBody?.base64EncodedString())")
-        AF.request(request)
-            .validate(statusCode: 200...299)
-            .responseDecodable(of: likeModel.self) { response in
-                print("statusCode", response.response?.statusCode)
-                switch response.result {
-                case .success(let success):
-                    print("성공 안보이지?")
-                    completion(.success(success))
-                case .failure(let error):
-                    print("실패 안보이지?")
-                    completion(.failure(error))
-                }
-            }
-    }
-    static func viewPost2(next: String, limit: String, productId: String) -> Single<ViewPostModel> {
-        var request = try! Router.viewPost2(next: next, limit: limit, productId: productId).asURLRequest()
-        // URLComponents를 사용해 queryItems를 추가
-        if var urlComponents = URLComponents(url: request.url!, resolvingAgainstBaseURL: false) {
-            urlComponents.queryItems = Router.viewPost2(next: next, limit: limit, productId: productId).queryItems
-            request.url = urlComponents.url
-        }
-        print("Complete URL: \(request.url?.absoluteString ?? "Invalid URL")")
-        return Single.create { observer in
-            AF.request(request)
-                .validate(statusCode: 200...299)
-                .responseDecodable(of: ViewPostModel.self) { response in
-                    switch response.result {
-                    case .success(let success):
-                        observer(.success(success))
-                    case .failure(let error):
-                        observer(.failure(error))
+                        print("❌ Token Refresh Error:", error)
+                        
+                        // 401 에러인 경우 로그인 화면으로 이동
+                        if response.response?.statusCode == 401 {
+                            DispatchQueue.main.async {
+                                UserDefaultsManager.shared.clearAll()
+                                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                                   let window = windowScene.windows.first {
+                                    let loginVC = LoginViewController()
+                                    let navController = UINavigationController(rootViewController: loginVC)
+                                    window.rootViewController = navController
+                                }
+                            }
+                            observer(.failure(NetworkError.refreshTokenExpired))
+                        } else {
+                            observer(.failure(error))
+                        }
                     }
                 }
+            
             return Disposables.create()
-        }.debug("viewPost2 API 통신")
-    }
-    static func viewPost(next: String, limit: String, productId: String, productId1: String, productId2: String, productId3: String, productId4: String, productId5: String) -> Single<ViewPostModel> {
-        var request = try! Router.viewPost(next: next, limit: limit, productId: productId, productId1: productId1, productId2: productId2, productId3: productId3, productId4: productId4, productId5: productId5).asURLRequest()
-        // URLComponents를 사용해 queryItems를 추가
-        if var urlComponents = URLComponents(url: request.url!, resolvingAgainstBaseURL: false) {
-            urlComponents.queryItems = Router.viewPost(next: next, limit: limit, productId: productId, productId1: productId1, productId2: productId2, productId3: productId3, productId4: productId4, productId5: productId5).queryItems
-            request.url = urlComponents.url
         }
-        print("Complete URL: \(request.url?.absoluteString ?? "Invalid URL")")
-        return Single.create { observer in
-            AF.request(request)
+    }
+    
+    private static func requestWithRetry<T: Decodable>(_ urlRequest: URLRequestConvertible) -> Single<T> {
+        return Single<T>.create { observer in
+            authSession.request(urlRequest)
                 .validate(statusCode: 200...299)
-                .responseDecodable(of: ViewPostModel.self) { response in
-                    switch response.result {
-                    case .success(let success):
-                        observer(.success(success))
-                    case .failure(let error):
-                        observer(.failure(error))
+                .responseDecodable(of: T.self) { response in
+                    switch response.response?.statusCode {
+                    case 419:
+                        refreshToken()
+                            .flatMap { _ in requestWithRetry(urlRequest) }
+                            .subscribe(
+                                onSuccess: { observer(.success($0)) },
+                                onFailure: { observer(.failure($0)) }
+                            )
+                            .disposed(by: DisposeBag())
+                        
+                    case 418:
+                        DispatchQueue.main.async {
+                            UserDefaultsManager.shared.clearAll()
+                            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                               let window = windowScene.windows.first {
+                                let loginVC = LoginViewController()
+                                let navController = UINavigationController(rootViewController: loginVC)
+                                window.rootViewController = navController
+                            }
+                        }
+                        observer(.failure(NetworkError.refreshTokenExpired))
+                        
+                    default:
+                        switch response.result {
+                        case .success(let value):
+                            observer(.success(value))
+                        case .failure(let error):
+                            observer(.failure(error))
+                        }
                     }
                 }
+            
             return Disposables.create()
-        }.debug("viewPost API 통신")
+        }
     }
+    
+    // MARK: - Public APIs without Auth
+    
     static func emailCheck(email: String) -> Single<EmailCheckModel> {
-        let query = emailCheckQuery(email: email)
-        let request = try! Router.emailCheck(query: query).asURLRequest()
         return Single.create { observer in
+            let query = emailCheckQuery(email: email)
+            let request = try! Router.emailCheck(query: query).asURLRequest()
+            
             AF.request(request)
                 .validate(statusCode: 200...299)
                 .responseDecodable(of: EmailCheckModel.self) { response in
                     switch response.result {
-                    case .success(let success):
-                        observer(.success(success))
+                    case .success(let value):
+                        observer(.success(value))
                     case .failure(let error):
                         observer(.failure(error))
                     }
                 }
+            
             return Disposables.create()
-        }.debug("iTunes API 통신")
-    }
-    static func createJoin(email: String, passwrod: String, nick: String, phoneNum: String, birthDay: String, completion: @escaping(Bool)->() ) {
-        do {
-            let query = JoinQuery(email: email, password: passwrod, nick: nick, phoneNum: phoneNum, birthDay: birthDay)
-            let request = try Router.join(query: query).asURLRequest()
-            AF.request(request).responseDecodable(of: SignModel.self) { response in
-                switch response.result {
-                case .success(let success):
-                    print("OK",success)
-                    completion(true)
-                case .failure(let failure):
-                    print("Fail", failure)
-                    completion(false)
-                }
-            }
-        } catch {
-            print("에러",error)
-            completion(false)
         }
     }
-    static func createLogin(email: String, password: String, completion: @escaping(Bool)->() ) {
-        do {
+    
+    static func createJoin(email: String, password: String, nick: String, phoneNum: String, birthDay: String) -> Single<SignModel> {
+        return Single.create { observer in
+            let query = JoinQuery(email: email, password: password, nick: nick, phoneNum: phoneNum, birthDay: birthDay)
+            let request = try! Router.join(query: query).asURLRequest()
+            
+            AF.request(request)
+                .validate(statusCode: 200...299)
+                .responseDecodable(of: SignModel.self) { response in
+                    switch response.result {
+                    case .success(let value):
+                        observer(.success(value))
+                    case .failure(let error):
+                        observer(.failure(error))
+                    }
+                }
+            
+            return Disposables.create()
+        }
+    }
+    
+    static func createLogin(email: String, password: String) -> Single<SignModel> {
+        return Single.create { observer in
             let query = LoginQuery(email: email, password: password)
-            let request = try Router.login(query: query).asURLRequest()
-            AF.request(request).responseDecodable(of: SignModel.self) { response in
-                switch response.result {
-                case.success(let success):
-                    print("OK",success)
-                    UserDefaultsManager.shared.token = success.access!
-                    UserDefaultsManager.shared.refreshToken = success.refresh!
-                    UserDefaultsManager.shared.user_id = success.id
-                    UserDefaultsManager.shared.nick = success.nick
-                    completion(true)
-                case .failure(let failure):
-                    print("Fail",failure)
-                    completion(false)
+            let request = try! Router.login(query: query).asURLRequest()
+            
+            AF.request(request)
+                .validate(statusCode: 200...299)
+                .responseDecodable(of: SignModel.self) { response in
+                    switch response.result {
+                    case .success(let value):
+                        observer(.success(value))
+                    case .failure(let error):
+                        observer(.failure(error))
+                    }
                 }
-            }
-        } catch {
-            print("에러",error)
-            completion(false)
+            
+            return Disposables.create()
         }
     }
-    static func refreshToken() {
-        do {
-            let request = try Router.refresh.asURLRequest()
-            AF.request(request).responseDecodable(of: RefreshModel.self) { responese in
-                print(responese.response?.statusCode)
-                if responese.response?.statusCode == 418 {
-                    for key in UserDefaults.standard.dictionaryRepresentation().keys {
-                        UserDefaults.standard.removeObject(forKey: key.description)
+    
+    // MARK: - Protected APIs with Auth
+    
+    static func withdraw() -> Single<SignModel> {
+        let request = try! Router.withdraw.asURLRequest()
+        return requestWithRetry(request)
+    }
+    
+    static func deletePost(post_id: String) -> Single<Bool> {
+        let request = try! Router.deletePost(postID: post_id).asURLRequest()
+        return requestWithRetry(request as URLRequestConvertible)
+            .map { (_: EmptyResponse) in true }
+            .catch { error in
+                print("Delete post error:", error)
+                return .just(false)
+            }
+    }
+    
+    static func editPost(post_id: String, title: String, content: String, content1: String, content2: String, content3: String, price: Int, product_id: String, files: [String]) -> Single<PostData> {
+        let query = writeEditPostQuery(title: title, content: content, content1: content1, content2: content2, content3: content3, price: price, product_id: product_id, files: files)
+        let request = try! Router.editPost(query: query, postID: post_id).asURLRequest()
+        return requestWithRetry(request)
+    }
+    
+    static func usersPost(userID: String, next: String, limit: String) -> Single<ViewPostModel> {
+        var request = try! Router.usersPost(userID: userID, next: next, limit: limit).asURLRequest()
+        if var urlComponents = URLComponents(url: request.url!, resolvingAgainstBaseURL: false) {
+            urlComponents.queryItems = Router.usersPost(userID: userID, next: next, limit: limit).queryItems
+            request.url = urlComponents.url
+        }
+        return requestWithRetry(request)
+    }
+    
+    static func uploadFiles(images: [Data?]) -> Single<uploadFilesModel> {
+        return Single.create { observer in
+            let url = APIKey.BaseURL + "v1/posts/files"
+            
+            let header: HTTPHeaders = [
+                Header.sesacKey.rawValue: APIKey.SesacKey,
+                Header.authorization.rawValue: UserDefaultsManager.shared.token,
+                Header.contentType.rawValue: Header.multipart.rawValue
+            ]
+            
+            AF.upload(multipartFormData: { multipartFormData in
+                for (index, imageData) in images.enumerated() {
+                    if let data = imageData {
+                        multipartFormData.append(data, withName: "files", fileName: "image\(index + 1).jpg", mimeType: "image/jpg")
                     }
-                    let vc = LoginViewController()
-                    //self.setRootViewController(vc)
-                } else {
-                    switch responese.result {
-                    case .success(let success):
-                        print(success)
-                        UserDefaultsManager.shared.token = success.accessToken
-                        //self,fetchProfile
-                    case.failure(let failure):
-                        print(failure)
+                }
+            }, to: url, headers: header)
+            .validate(statusCode: 200...299)
+            .responseDecodable(of: uploadFilesModel.self) { response in
+                switch response.response?.statusCode {
+                case 400:
+                    observer(.failure(NetworkError.badRequest))
+                case 419:
+                    refreshToken()
+                        .flatMap { _ in uploadFiles(images: images) }
+                        .subscribe(
+                            onSuccess: { observer(.success($0)) },
+                            onFailure: { observer(.failure($0)) }
+                        )
+                        .disposed(by: DisposeBag())
+                default:
+                    switch response.result {
+                    case .success(let value):
+                        observer(.success(value))
+                    case .failure(let error):
+                        observer(.failure(error))
                     }
                 }
             }
-        } catch {
-            print("에러",error)
+            
+            return Disposables.create()
+        }
+    }
+    
+    static func uploadPostContents(title: String, content: String, content1: String, content2: String, content3: String, price: Int, product_id: String, files: [String]) -> Single<PostData> {
+        let query = writeEditPostQuery(title: title, content: content, content1: content1, content2: content2, content3: content3, price: price, product_id: product_id, files: files)
+        let request = try! Router.writePost(query: query).asURLRequest()
+        return requestWithRetry(request)
+    }
+    
+    static func likePost(postID: String, like_status: Bool) -> Single<likeModel> {
+        let query = likePostQuery(like_status: like_status)
+        let request = try! Router.likePost(postID: postID, query: query).asURLRequest()
+        return requestWithRetry(request)
+    }
+    
+    static func viewPost2(next: String, limit: String, productId: String) -> Single<ViewPostModel> {
+        var request = try! Router.viewPost2(next: next, limit: limit, productId: productId).asURLRequest()
+        if var urlComponents = URLComponents(url: request.url!, resolvingAgainstBaseURL: false) {
+            urlComponents.queryItems = Router.viewPost2(next: next, limit: limit, productId: productId).queryItems
+            request.url = urlComponents.url
+        }
+        return requestWithRetry(request)
+    }
+    
+    static func viewPost(next: String, limit: String, productId: String, productId1: String, productId2: String, productId3: String, productId4: String, productId5: String) -> Single<ViewPostModel> {
+        var request = try! Router.viewPost(next: next, limit: limit, productId: productId, productId1: productId1, productId2: productId2, productId3: productId3, productId4: productId4, productId5: productId5).asURLRequest()
+        if var urlComponents = URLComponents(url: request.url!, resolvingAgainstBaseURL: false) {
+            urlComponents.queryItems = Router.viewPost(next: next, limit: limit, productId: productId, productId1: productId1, productId2: productId2, productId3: productId3, productId4: productId4, productId5: productId5).queryItems
+            request.url = urlComponents.url
+        }
+        return requestWithRetry(request)
+    }
+}
+
+// MARK: - NetworkError
+enum NetworkError: Error {
+    case refreshTokenExpired
+    case tokenRefreshFailed
+    case badRequest
+    case unknown
+    
+    var localizedDescription: String {
+        switch self {
+        case .refreshTokenExpired:
+            return "세션이 만료되었습니다. 다시 로그인해주세요."
+        case .tokenRefreshFailed:
+            return "인증에 실패했습니다. 다시 시도해주세요."
+        case .badRequest:
+            return "잘못된 요청입니다. 다시 시도해주세요."
+        case .unknown:
+            return "알 수 없는 오류가 발생했습니다."
         }
     }
 }

@@ -9,6 +9,7 @@ import UIKit
 import Then
 import SnapKit
 import PhotosUI
+import RxSwift
 
 enum uploadMode {
     case writeMode
@@ -17,6 +18,7 @@ enum uploadMode {
 class WriteViewController: UIViewController {
     var mode: uploadMode = .writeMode
     var postID = ""
+    private let disposeBag = DisposeBag()
     private let imageButton = UIButton().then {
         $0.backgroundColor = .systemGray6
         $0.setImage(UIImage(systemName: "camera.fill"), for: .normal)
@@ -299,89 +301,92 @@ class WriteViewController: UIViewController {
     private func uploadPostFiles() {
         let images = imageViews.compactMap { $0.image?.jpegData(compressionQuality: 0.5) }
         
-        NetworkManager.uploadFiles(images: images) { result in
-            switch result {
-            case .success(let success):
-                dump(success.files)
-                if self.imageViews.isEmpty {
-                    //DispatchQueue.main.async {
-                        self.showAlert(title: "업로드 실패", message: "이미지를 추가해주세요.")
-                    //}
-                }
-                else if self.brandTextField.text!.isEmpty {
-                    self.showAlert(title: "업로드 실패", message: "브랜드명을 작성해주세요.")
-                }
-                else if self.selectedCategory == "" {
-                    self.showAlert(title: "업로드 실패", message: "카테고리를 선택해주세요.")
-                }
-                else if self.titleTextField.text!.isEmpty {
-                    self.showAlert(title: "업로드 실패", message: "용품명을 작성해주세요.")
-                }
-                else if (self.contentTextView.textColor == UIColor.grey) &&  self.contentTextView.text.isEmpty {
-                    self.showAlert(title: "업로드 실패", message: "내용을 작성해주세요.")
-                }
-                else if self.locationTextField.text!.isEmpty {
-                    self.showAlert(title: "업로드 실패", message: "판매 지역을 작성해주세요.")
-                }
-                else {
-                    if self.mode == .writeMode {
-                        NetworkManager.uploadPostContents(title: self.titleTextField.text!, content: self.contentTextView.text!, content1: self.brandTextField.text!, content2: self.locationTextField.text!, content3: self.content3, price: Int(self.priceTextField.text!) ?? 0, product_id: self.selectedCategory, files: success.files) { result in
-                                switch result {
-                                    case .success(let success):
-                                        dump(success.files)
-                                        self.navigationController?.dismiss(animated: true)
-                                    self.showAlert(title: "업로드 성공", message: "게시글 업로드가 완료되었습니다.")
-                                    case .failure(let error):
-                                        dump(error)
-                                        self.showAlert(title: "업로드 실패", message: "네트워크 연결을 확인해주세요")
-                                }
-                            }
-                    } else {
-                        var categoryValue = ""
-                        switch self.categoryButton.titleLabel?.text {
-                        case "기성품 키보드":
-                            categoryValue = "dbokeyt_made"
-                        case "커스텀 키보드":
-                            categoryValue = "dbokey_custom"
-                        case "키캡":
-                            categoryValue = "dbokey_keycap"
-                        case "스위치":
-                            categoryValue = "dbokey_switch"
-                        case "아티산":
-                            categoryValue = "dbokey_artisan"
-                        case "기타":
-                            categoryValue  = "dbokey_etc"
-                        default:
-                            categoryValue  = ""
-                        }
-                        var selected = ""
-                        if self.segmentedControl.selectedSegmentIndex == 0 {
-                            selected = "중고용품"
-                        } else {
-                            selected = "새상품"
-                        }
-                        NetworkManager.editPost(post_id: self.postID, title: self.titleTextField.text!, content: self.contentTextView.text, content1: self.brandTextField.text!, content2: self.locationTextField.text!, content3: selected, price: Int(self.priceTextField.text!)!, product_id: categoryValue, files: success.files) { result in
-                            switch result {
-                                case .success(let success):
-                                    dump(success.files)
-                                    self.navigationController?.dismiss(animated: true)
-                                self.showAlert(title: "게시글 수정 성공", message: "게시글 수정이 완료되었습니다.")
-                                case .failure(let error):
-                                    dump(error)
-                                    self.showAlert(title: "게시글 수정 실패", message: "네트워크 연결을 확인해주세요")
-                            }
-                        }
-                    }
+        // 입력 검증
+        guard !images.isEmpty else {
+            showAlert(title: "업로드 실패", message: "이미지를 추가해주세요.")
+            return
+        }
+        guard !brandTextField.text!.isEmpty else {
+            showAlert(title: "업로드 실패", message: "브랜드명을 작성해주세요.")
+            return
+        }
+        guard !selectedCategory.isEmpty else {
+            showAlert(title: "업로드 실패", message: "카테고리를 선택해주세요.")
+            return
+        }
+        guard !titleTextField.text!.isEmpty else {
+            showAlert(title: "업로드 실패", message: "용품명을 작성해주세요.")
+            return
+        }
+        guard !(contentTextView.textColor == UIColor.grey && contentTextView.text.isEmpty) else {
+            showAlert(title: "업로드 실패", message: "내용을 작성해주세요.")
+            return
+        }
+        guard !locationTextField.text!.isEmpty else {
+            showAlert(title: "업로드 실패", message: "판매 지역을 작성해주세요.")
+            return
+        }
+
+        NetworkManager.uploadFiles(images: images)
+            .observe(on: MainScheduler.instance)
+            .flatMap { [weak self] uploadResult -> Single<PostData> in
+                guard let self = self else { return .error(NetworkError.unknown) }
+                
+                if self.mode == .writeMode {
+                    return NetworkManager.uploadPostContents(
+                        title: self.titleTextField.text!,
+                        content: self.contentTextView.text!,
+                        content1: self.brandTextField.text!,
+                        content2: self.locationTextField.text!,
+                        content3: self.content3,
+                        price: Int(self.priceTextField.text!) ?? 0,
+                        product_id: self.selectedCategory,
+                        files: uploadResult.files
+                    )
+                } else {
+                    let categoryValue = self.getCategoryValue()
+                    let selected = self.segmentedControl.selectedSegmentIndex == 0 ? "중고용품" : "새상품"
                     
-                }
-            case .failure(let error):
-                print(error)
-                DispatchQueue.main.async {
-                    self.showAlert(title: "업로드 실패", message: "이미지를 추가해주세요.")//400:현제, 419:다시 로그인 해주세요?
+                    return NetworkManager.editPost(
+                        post_id: self.postID,
+                        title: self.titleTextField.text!,
+                        content: self.contentTextView.text,
+                        content1: self.brandTextField.text!,
+                        content2: self.locationTextField.text!,
+                        content3: selected,
+                        price: Int(self.priceTextField.text!)!,
+                        product_id: categoryValue,
+                        files: uploadResult.files
+                    )
                 }
             }
-        }
+            .subscribe(onSuccess: { [weak self] _ in
+                guard let self = self else { return }
+                self.navigationController?.dismiss(animated: true)
+                let title = self.mode == .writeMode ? "업로드 성공" : "게시글 수정 성공"
+                let message = self.mode == .writeMode ? "게시글 업로드가 완료되었습니다." : "게시글 수정이 완료되었습니다."
+                self.showAlert(title: title, message: message)
+            }, onFailure: { [weak self] error in
+                guard let self = self else { return }
+                print("Error:", error)
+                let title = self.mode == .writeMode ? "업로드 실패" : "게시글 수정 실패"
+                self.showAlert(title: title, message: "네트워크 연결을 확인해주세요")
+            })
+            .disposed(by: disposeBag)
     }
+
+    // 카테고리 값을 얻는 헬퍼 메서드
+    private func getCategoryValue() -> String {
+        switch categoryButton.titleLabel?.text {
+        case "기성품 키보드": return "dbokeyt_made"
+        case "커스텀 키보드": return "dbokey_custom"
+        case "키캡": return "dbokey_keycap"
+        case "스위치": return "dbokey_switch"
+        case "아티산": return "dbokey_artisan"
+        case "기타": return "dbokey_etc"
+        default: return ""
+        }
+    }    
     private func setupRemoveButtons() {
         for (index, button) in removeButtons.enumerated() {
             button.addTarget(self, action: #selector(removeButtonTapped(_:)), for: .touchUpInside)

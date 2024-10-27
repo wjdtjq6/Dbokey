@@ -25,10 +25,14 @@ final class LoginViewController: UIViewController {
         bind()
     }
     func bind() {
-        let input = LoginViewModel.Input(textEmail: emailTextField.rx.text, textPW: passwordTextField.rx.text, tap: signInButton.rx.tap)
+        let input = LoginViewModel.Input(
+            textEmail: emailTextField.rx.text,
+            textPW: passwordTextField.rx.text,
+            tap: signInButton.rx.tap
+        )
         let output = viewModel.transform(input: input)
 
-        Observable.combineLatest(output.validationEmail, output.validationPW) { $0 && $1 }//ouput
+        Observable.combineLatest(output.validationEmail, output.validationPW) { $0 && $1 }
             .bind(with: self, onNext: { owner, value in
                 owner.signInButton.isEnabled = value
                 let color: UIColor = value ? Constant.Color.accent : Constant.Color.grey
@@ -36,30 +40,45 @@ final class LoginViewController: UIViewController {
             })
             .disposed(by: disposeBag)
         
-        output.tap//signInButton.rx.tap//input,output
-            .bind(onNext: { _ in
-                let email = output.emailRelay.value//.value
-                let pw = output.passwordRelay.value
-
-                NetworkManager.createLogin(email: email, password: pw) { success in
-                    success ? self.showAlert(message: self.messages[0]) : self.showAlert(message: self.messages[1])
-                    
+        output.tap
+            .withLatestFrom(Observable.combineLatest(output.emailRelay, output.passwordRelay))
+            .flatMap { [weak self] (email, password) -> Single<SignModel> in
+                guard let self = self else {
+                    return .error(NetworkError.unknown)
                 }
+                return NetworkManager.createLogin(email: email, password: password)
+            }
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] response in
+                guard let self = self else { return }
+                // 토큰 정보 저장
+                UserDefaultsManager.shared.token = response.access ?? ""
+                UserDefaultsManager.shared.refreshToken = response.refresh ?? ""
+                // 사용자 정보 저장
+                UserDefaultsManager.shared.user_id = response.id
+                UserDefaultsManager.shared.nick = response.nick
+                self.showAlert(message: self.messages[0])
+            }, onError: { [weak self] error in
+                guard let self = self else { return }
+                self.showAlert(message: self.messages[1])
             })
             .disposed(by: disposeBag)
     }
+
+    // showAlert 메서드도 약간 수정
     func showAlert(message: String) {
         let alert = UIAlertController(title: message, message: nil, preferredStyle: .alert)
-        let check = UIAlertAction(title: "확인", style: .default) { _ in
-            if alert.title == self.messages[0] {
+        let check = UIAlertAction(title: "확인", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            if message == self.messages[0] {
                 let vc = TabBarController()
-                //let nav = UINavigationController(rootViewController: vc)
                 self.setController(vc)
             }
         }
         alert.addAction(check)
         present(alert, animated: true)
     }
+    
     @objc func signUpButtonPressed() {
         navigationController?.pushViewController(SignUpViewController(), animated: true)
         print(#function)

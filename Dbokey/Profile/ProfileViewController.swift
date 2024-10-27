@@ -39,36 +39,6 @@ final class ProfileViewController: UIViewController {
 //            }
 //        })
     }
-    /*func refreshToken() {
-        let url = Key.baseURL + "v1/auth/refresh"
-        let accessToken = UserDefaults.standard.string(forKey: UserDefaultsKey.access.rawValue) ?? ""
-        let refreshToken = UserDefaults.standard.string(forKey: UserDefaultsKey.refresh.rawValue) ?? ""
-        let header: HTTPHeaders = [
-            Header.authorization.rawValue: accessToken,
-            Header.authorization.rawValue: refreshToken,
-            Header.contentType.rawValue: Header.json.rawValue,
-            Header.sesacKey.rawValue: Key.key
-        ]
-        AF.request(url,method: .get, headers: header).responseDecodable(of: RefreshModel.self) { response in
-            print(response.response?.statusCode)
-                if response.response?.statusCode == 418 {
-                    for key in UserDefaults.standard.dictionaryRepresentation().keys {
-                        UserDefaults.standard.removeObject(forKey: key.description)
-                    }
-                    let vc = LoginViewController()
-                    self.setRootViewController(vc)
-                } else {
-                    switch response.result {
-                    case .success(let success):
-                        print(success)
-                        UserDefaults.standard.setValue(success.accessToken, forKey: UserDefaultsKey.access.rawValue)
-                        self.fetchProfile()//도르마무/ 사용자는 내 accesstoken이 만료됐는지 알수없음
-                    case .failure(let failure):
-                        print(failure)
-                }
-            }
-        }
-    }*/
     private func setupActions() {
         profileView.logoutButton.addTarget(self, action: #selector(logoutButtonTapped), for: .touchUpInside)
         profileView.EditButton.addTarget(self, action: #selector(editButtonTapped), for: .touchUpInside)
@@ -81,6 +51,3 @@ final class ProfileViewController: UIViewController {
         self.setController(vc)
     }
 }
-//1.accessToken 갱신 로직 구조화(어떻게 하나로 만들 수 있을까?)
-//2.0.5~1초 연속x
-//3.multipart/form-data

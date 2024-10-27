@@ -15,34 +15,37 @@ class BirthdayViewModel {
         let tap: ControlEvent<Void>
     }
     struct Output {
-        let year: BehaviorRelay<Int>
-        let month: BehaviorRelay<Int>
-        let day: BehaviorRelay<Int>
-        let tap: ControlEvent<Void>
+        let year: Observable<Int>
+        let month: Observable<Int>
+        let day: Observable<Int>
         let validation: Observable<Bool>
+        let tap: Observable<Void>
     }
     func transform(input: Input) -> Output {
-        //1.
-        let yearFormatter = DateFormatter()
-        yearFormatter.dateFormat = "yyyy"
-        let yearStr = yearFormatter.string(from: Date.now)
-        let year = BehaviorRelay(value: Int(yearStr)!)
-        let monthFormatter = DateFormatter()
-        monthFormatter.dateFormat = "M"
-        let monthStr = monthFormatter.string(from: Date.now)
-        let month = BehaviorRelay(value: Int(monthStr)!)
-        let dayFormatter = DateFormatter()
-        dayFormatter.dateFormat = "d"
-        let dayStr = dayFormatter.string(from: Date.now)
-        let day = BehaviorRelay(value:Int(dayStr)!)
+        let year = input.birthday
+            .map { Calendar.current.component(.year, from: $0) }
         
+        let month = input.birthday
+            .map { Calendar.current.component(.month, from: $0) }
+        
+        let day = input.birthday
+            .map { Calendar.current.component(.day, from: $0) }
         
         let validation = input.birthday
             .map { date -> Bool in
-                let component = Calendar.current.dateComponents([.year], from: date, to: Date())
-                guard let age = component.year else { return false }
-                return age >= 17
+                let calendar = Calendar.current
+                let now = Date()
+                let ageComponents = calendar.dateComponents([.year], from: date, to: now)
+                return (ageComponents.year ?? 0) >= 17
             }
-        return Output(year: year, month: month, day: day, tap: input.tap, validation: validation)
+            .distinctUntilChanged()
+        
+        return Output(
+            year: year.asObservable(),
+            month: month.asObservable(),
+            day: day.asObservable(),
+            validation: validation,
+            tap: input.tap.asObservable()
+        )
     }
 }

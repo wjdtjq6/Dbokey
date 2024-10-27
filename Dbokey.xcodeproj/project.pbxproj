@@ -57,6 +57,7 @@
 		BF76A14A2C8172D800FC6974 /* MySellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF76A1492C8172D800FC6974 /* MySellViewModel.swift */; };
 		BF76A1572C84980900FC6974 /* iamport-ios in Frameworks */ = {isa = PBXBuildFile; productRef = BF76A1562C84980900FC6974 /* iamport-ios */; };
 		BF9241212CCBB90300D3A699 /* Constant.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9241202CCBB90300D3A699 /* Constant.swift */; };
+		BF9241232CCDF3F000D3A699 /* AuthenticationInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9241222CCDF3F000D3A699 /* AuthenticationInterceptor.swift */; };
 		BFCC3DF42C808BCC0060C729 /* CommunityTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCC3DF32C808BCC0060C729 /* CommunityTableViewCell.swift */; };
 		BFCC3DF62C808D290060C729 /* MyTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCC3DF52C808D290060C729 /* MyTableViewCell.swift */; };
 		BFCC3DF82C80C8D60060C729 /* MySellViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCC3DF72C80C8D60060C729 /* MySellViewController.swift */; };
@@ -127,6 +128,7 @@
 		BF7223022C736DD3004BF726 /* ListCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListCollectionViewCell.swift; sourceTree = "<group>"; };
 		BF76A1492C8172D800FC6974 /* MySellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MySellViewModel.swift; sourceTree = "<group>"; };
 		BF9241202CCBB90300D3A699 /* Constant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constant.swift; sourceTree = "<group>"; };
+		BF9241222CCDF3F000D3A699 /* AuthenticationInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationInterceptor.swift; sourceTree = "<group>"; };
 		BFCC3DF32C808BCC0060C729 /* CommunityTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityTableViewCell.swift; sourceTree = "<group>"; };
 		BFCC3DF52C808D290060C729 /* MyTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyTableViewCell.swift; sourceTree = "<group>"; };
 		BFCC3DF72C80C8D60060C729 /* MySellViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MySellViewController.swift; sourceTree = "<group>"; };
@@ -245,6 +247,7 @@
 				BF7222B12C6F227B004BF726 /* TargetType.swift */,
 				BF7222AF2C6F2274004BF726 /* UserDefaultsManager.swift */,
 				BF7222AB2C6F2265004BF726 /* NetworkManager.swift */,
+				BF9241222CCDF3F000D3A699 /* AuthenticationInterceptor.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -489,6 +492,7 @@
 				BF61D0672C7B788A001448B0 /* CommunityViewController.swift in Sources */,
 				BFCC3DF42C808BCC0060C729 /* CommunityTableViewCell.swift in Sources */,
 				BF7222C52C6F23D7004BF726 /* SignUpViewController.swift in Sources */,
+				BF9241232CCDF3F000D3A699 /* AuthenticationInterceptor.swift in Sources */,
 				BF19C8EE2C6C7CC800A59041 /* MainViewController.swift in Sources */,
 				BF7222EF2C70C4EE004BF726 /* BirthdayViewController.swift in Sources */,
 				BF19C8EA2C6C7CC800A59041 /* AppDelegate.swift in Sources */,

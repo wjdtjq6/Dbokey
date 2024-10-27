@@ -11,6 +11,7 @@ import SnapKit
 import Kingfisher
 import iamport_ios
 import WebKit
+import RxSwift
 
 enum buttonMode {
     case withButton
@@ -57,30 +58,31 @@ class DetailViewController: UIViewController {
         $0.transform = CGAffineTransform(scaleX: 1.5, y: 2) // 이미지를 2배로 확대
         $0.addTarget(self, action: #selector(likeFuncButtonClicked), for: .touchUpInside)
     }
+    let disposeBag = DisposeBag()
+    
     @objc func likeFuncButtonClicked() {
         if likeFuncButton.isSelected {
-            NetworkManager.likePost(postID: data![row].post_id, like_status: false) { result in
-                switch result {
-                    case .success:
-                        DispatchQueue.main.async {
-                            self.likeFuncButton.isSelected.toggle()
-                        }
-                    case .failure(let error):
-                        print("Error updating like status: \(error)")
+            NetworkManager.likePost(postID: data![row].post_id, like_status: false)
+                .subscribe(onSuccess: { [weak self] _ in
+                    guard let self = self else { return }
+                    DispatchQueue.main.async {
+                        self.likeFuncButton.isSelected.toggle()
                     }
-            }
-        }
-        else {
-            NetworkManager.likePost(postID: data![row].post_id, like_status: true) { result in
-                switch result {
-                    case .success:
-                        DispatchQueue.main.async {
-                            self.likeFuncButton.isSelected.toggle()
-                        }
-                    case .failure(let error):
-                        print("Error updating like status: \(error)")
+                }, onFailure: { error in
+                    print("Error updating like status: \(error)")
+                })
+                .disposed(by: disposeBag)
+        } else {
+            NetworkManager.likePost(postID: data![row].post_id, like_status: true)
+                .subscribe(onSuccess: { [weak self] _ in
+                    guard let self = self else { return }
+                    DispatchQueue.main.async {
+                        self.likeFuncButton.isSelected.toggle()
                     }
-            }
+                }, onFailure: { error in
+                    print("Error updating like status: \(error)")
+                })
+                .disposed(by: disposeBag)
         }
     }
     let nickLabel = UILabel().then {
@@ -468,21 +470,43 @@ class DetailViewController: UIViewController {
             let alertController = UIAlertController(title: nil, message: "게시글을 삭제하시겠어요?", preferredStyle: .alert)
             let deleteAction = UIAlertAction(title: "삭제", style: .destructive) { _ in
                 //TODO: 삭제 API
-                NetworkManager.deletePost(post_id: self.data![self.row].post_id) { success in
-                    if success {
-                        let alertConfirmController = UIAlertController(title: nil, message: "게시글이 삭제되었습니다.", preferredStyle: .alert)
-                        let okAction = UIAlertAction(title: "확인", style: .default) { _ in
-                            self.navigationController?.popViewController(animated: true)
+                NetworkManager.deletePost(post_id: self.data![self.row].post_id)
+                    .subscribe(onSuccess: { [weak self] success in
+                        guard let self = self else { return }
+                        if success {
+                            let alertConfirmController = UIAlertController(
+                                title: nil,
+                                message: "게시글이 삭제되었습니다.",
+                                preferredStyle: .alert
+                            )
+                            let okAction = UIAlertAction(title: "확인", style: .default) { [weak self] _ in
+                                self?.navigationController?.popViewController(animated: true)
+                            }
+                            alertConfirmController.addAction(okAction)
+                            self.present(alertConfirmController, animated: true)
+                        } else {
+                            let alertConfirmController = UIAlertController(
+                                title: "삭제 실패",
+                                message: "다시 시도해주세요.",
+                                preferredStyle: .alert
+                            )
+                            let okAction = UIAlertAction(title: "확인", style: .default)
+                            alertConfirmController.addAction(okAction)
+                            self.present(alertConfirmController, animated: true)
                         }
-                        alertConfirmController.addAction(okAction)
-                        self.present(alertConfirmController, animated: true)
-                    } else {
-                        let alertConfirmController = UIAlertController(title: "삭제 실패", message: "다시 시도해주세요.", preferredStyle: .alert)
+                    }, onFailure: { [weak self] error in
+                        guard let self = self else { return }
+                        let alertConfirmController = UIAlertController(
+                            title: "오류 발생",
+                            message: "다시 시도해주세요.",
+                            preferredStyle: .alert
+                        )
                         let okAction = UIAlertAction(title: "확인", style: .default)
                         alertConfirmController.addAction(okAction)
-                        self.present(alertConfirmController, animated: true, completion: nil)
-                    }
-                }
+                        self.present(alertConfirmController, animated: true)
+                    })
+                    .disposed(by: self.disposeBag)
+
             }
             let cancelAction = UIAlertAction(title: "취소", style: .cancel, handler: nil)
             alertController.addAction(cancelAction)

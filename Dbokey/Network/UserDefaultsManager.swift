@@ -8,7 +8,7 @@
 import Foundation
 
 class UserDefaultsManager {
-    enum UserDefaultsKey: String {
+    enum UserDefaultsKey: String, CaseIterable {
         case id
         case access
         case refresh
@@ -36,9 +36,9 @@ class UserDefaultsManager {
             UserDefaults.standard.set(newValue, forKey: UserDefaultsKey.access.rawValue)
         }
     }
-    var refreshToken: String {
+    var refreshToken: String? {
         get {
-            UserDefaults.standard.string(forKey: UserDefaultsKey.refresh.rawValue) ?? ""
+            UserDefaults.standard.string(forKey: UserDefaultsKey.refresh.rawValue)
         }
         set {
             UserDefaults.standard.set(newValue, forKey: UserDefaultsKey.refresh.rawValue)
@@ -82,6 +82,12 @@ class UserDefaultsManager {
         }
         set {
             UserDefaults.standard.set(newValue, forKey: UserDefaultsKey.birthDay.rawValue)
+        }
+    }
+    func clearAll() {
+        // UserDefaultsKey의 모든 케이스에 대해 값을 제거
+        UserDefaultsKey.allCases.forEach { key in
+            UserDefaults.standard.removeObject(forKey: key.rawValue)
         }
     }
 }

@@ -114,22 +114,56 @@ class BirthdayViewController: UIViewController {
             }
             .disposed(by: disposeBag)
         //4.
-        output.tap//nextButton.rx.tap//input,output
-            .bind(with: self) { owner, _ in
-                let alert = UIAlertController(title: "회원가입 완료", message: nil, preferredStyle: .alert)
-                let ok = UIAlertAction(title: "확인", style: .default) { _ in
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.dateFormat = "yyyyMMdd"
-                    let pickedDate = dateFormatter.string(from: self.birthDayPicker.date)
-                    NetworkManager.createJoin(email: UserDefaultsManager.shared.email, passwrod: UserDefaultsManager.shared.password, nick: UserDefaultsManager.shared.nick, phoneNum: UserDefaultsManager.shared.phoneNum, birthDay: UserDefaultsManager.shared.birthDay) { success in
-                        if success {
-                            self.navigationController?.popToRootViewController(animated: true)
-                        }
-                    }
+        output.tap
+            .flatMap { [weak self] _ -> Single<SignModel> in
+                guard let self = self else {
+                    return .error(NetworkError.unknown)
                 }
+                
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyyMMdd"
+                let pickedDate = dateFormatter.string(from: self.birthDayPicker.date)
+                UserDefaultsManager.shared.birthDay = pickedDate
+                
+                return NetworkManager.createJoin(
+                    email: UserDefaultsManager.shared.email,
+                    password: UserDefaultsManager.shared.password,
+                    nick: UserDefaultsManager.shared.nick,
+                    phoneNum: UserDefaultsManager.shared.phoneNum,
+                    birthDay: pickedDate
+                )
+            }
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] response in
+                guard let self = self else { return }
+                
+                let alert = UIAlertController(
+                    title: "회원가입 완료",
+                    message: nil,
+                    preferredStyle: .alert
+                )
+                
+                let ok = UIAlertAction(title: "확인", style: .default) { [weak self] _ in
+                    self?.navigationController?.popToRootViewController(animated: true)
+                }
+                
                 alert.addAction(ok)
                 self.present(alert, animated: true)
-            }
+                
+            }, onError: { [weak self] error in
+                guard let self = self else { return }
+                print("회원가입 실패:", error)
+                
+                let alert = UIAlertController(
+                    title: "회원가입 실패",
+                    message: "다시 시도해주세요.",
+                    preferredStyle: .alert
+                )
+                
+                let ok = UIAlertAction(title: "확인", style: .default)
+                alert.addAction(ok)
+                self.present(alert, animated: true)
+            })
             .disposed(by: disposeBag)
     }
     func configureLayout() {
