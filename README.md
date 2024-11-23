@@ -83,7 +83,7 @@ class UserDefaultsManager {
 }
 ```
 
-### 2. 페이지네이션 데이터 관리
+### 2.커서기반 페이지네이션 데이터 관리
 
 #### 문제
 - MainViewModel에서 페이지네이션 시 데이터 중복 및 누적 처리 이슈
